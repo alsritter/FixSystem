@@ -1,23 +1,61 @@
 # FixSystem
 
-#### 介绍
-维修高校智慧报修系统
+### 介绍
+
+这是一个简易前后端分离的高校报修系统
+
+前端展示：（占位）
+
+### 使用语言及框架
+
+> 前端
+
+1. js，html，css 前端标准语言
+2. vue、axios 等前端框架
+3. element_UI 组件库
+
+> 后端
+
+1. Spring Boot
+2. Redis
+3. MyBatis
+4. Spring Session
+5. RESTful
 
 #### 软件架构
+（占位）
+
 软件架构说明
 
+![image.png](https://i.loli.net/2020/08/25/NCVHvQrfSkUamAw.png)
 
-#### 安装教程
+### 开发和安装说明
+测试环境
+（占位）
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+### 使用的接口
 
-#### 使用说明
+关于前端主要用到的后台接口说明 （占位）
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+使用的第三方接口（占位）
+
+### 核心功能说明
+
+（占位）
+
+## 效果图（当前只是测试图）
+
+> 学生端界面
+
+![image.png](https://i.loli.net/2020/08/27/vx98WOUrCjbME5q.png)
+
+> 维修工作人员界面
+
+![image.png](https://i.loli.net/2020/08/27/icp3XGvVr42xTl6.png)
+
+> 后台管理员
+
+![image.png](https://i.loli.net/2020/08/27/8dIw5KWgTCtA3eq.png)
 
 #### 参与贡献
 
@@ -26,12 +64,3 @@
 3.  提交代码
 4.  新建 Pull Request
 
-
-#### 码云特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5.  码云官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
