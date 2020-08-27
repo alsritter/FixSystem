@@ -66,6 +66,12 @@
             <version>2.1.3</version>
         </dependency>
 
+        <!--方便使用 @Slf4j 注解生成日志接口-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.12</version>
+        </dependency>
     </dependencies>
 
     <repositories>

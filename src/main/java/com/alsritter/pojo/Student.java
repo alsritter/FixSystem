@@ -1,6 +1,8 @@
 package com.alsritter.pojo;
 
+import lombok.ToString;
 
+@ToString
 public class Student {
 
   private String studentId;

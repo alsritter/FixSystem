@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author alsritter
  * @version 1.0
  **/
+
 @RestController
 @RequestMapping("/hello")
 public class HelloController {

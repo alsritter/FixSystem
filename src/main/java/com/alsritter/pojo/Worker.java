@@ -1,8 +1,11 @@
 package com.alsritter.pojo;
 
 
+import lombok.ToString;
+
 import java.util.Date;
 
+@ToString
 public class Worker {
 
   private String workId;
