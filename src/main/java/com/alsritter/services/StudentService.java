@@ -1,6 +1,7 @@
 package com.alsritter.services;
 
 import com.alsritter.mappers.StudentMapper;
+import com.alsritter.pojo.Student;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ public class StudentService {
     @Resource
     public StudentMapper studentMapper;
 
-    public void getStudent(){
-        log.info(studentMapper.getStudent().toString());
+    public Student getStudent(){
+        return studentMapper.getStudent();
     }
 }
