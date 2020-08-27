@@ -1,0 +1,15 @@
+# 修改端口号
+server:
+  port: 8080
+
+# 关联其他配置文件
+spring:
+  profiles:
+    active: jdbc,log
+
+
+# 设置 mybatis
+mybatis:
+  type-aliases-package: com.alsritter.pojo # 实体类别名包路径，配了这个就无需在写全类名了
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 设置日志为后台输出
