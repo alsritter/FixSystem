@@ -72,6 +72,38 @@
             <artifactId>lombok</artifactId>
             <version>1.18.12</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <version>2.3.3.RELEASE</version>
+        </dependency>
+
+        <!-- 把实体类转换成 JSON 的工具 -->
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.11.2</version>
+        </dependency>
+
+        <!--
+            需要配置连接池，所以要引入这个包
+            ==============科普=================
+            druid 和 这个 commons-pool2 的关系
+            commons-pool2 是一个对象池工具，而 druid 是更高一级的封装即数据库连接池
+            相当于 一些数据库连接池是通过 commons-pool2 实现的
+
+            例如：如下使用commons-pool2 实现数据库连接池
+            https://blog.csdn.net/a19881029/article/details/81436193
+        -->
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-pool2 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>2.8.0</version>
+        </dependency>
     </dependencies>
 
     <repositories>

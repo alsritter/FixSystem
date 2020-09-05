@@ -5,7 +5,7 @@ server:
 # 关联其他配置文件
 spring:
   profiles:
-    active: jdbc,log
+    active: jdbc,log,redis
 
 
 # 设置 mybatis
