@@ -62,7 +62,6 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
      * @param request :
      * @param response :
      * @param handler :
-     * @exception null : null
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -102,14 +101,15 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
                 log.info("token is exist : {} ms", diff);
 
+                // 当距离超时还剩半个小时时则刷新 Token 的过期时间
                 // ConstantKit.TOKEN_EXPIRE_TIME 以秒为单位
-                if (diff > (ConstantKit.TOKEN_EXPIRE_TIME *1000)) {
+                if (diff > ((ConstantKit.TOKEN_EXPIRE_TIME - ConstantKit.TOKEN_RESET_TIME) * 1000)) {
                     stringTemplate.expire(userId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
                     stringTemplate.expire(token, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
-
+                    // 也重置一下创建时间
+                    valueOperations.set(token + userId, Long.toString(System.currentTimeMillis()));
+                    stringTemplate.expire(token + userId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
                     log.info("Reset expire time success!");
-                    long newBirthTime = System.currentTimeMillis();
-                    valueOperations.set(token + userId, Long.toString(newBirthTime));
                 }
 
                 // 如果 token 验证成功，将 token 对应的 userId 存在 request 中，以后就可以无须登陆直接取到 userId

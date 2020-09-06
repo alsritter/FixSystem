@@ -1,11 +1,16 @@
 # 修改端口号
 server:
   port: 8080
+  servlet:
+    #设置响应为 utf-8
+    encoding:
+      charset: utf-8
 
 # 关联其他配置文件
 spring:
   profiles:
     active: jdbc,log,redis
+
 
 
 # 设置 mybatis

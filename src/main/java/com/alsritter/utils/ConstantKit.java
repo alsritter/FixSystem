@@ -17,14 +17,14 @@ public final class ConstantKit {
     public static final Integer DEL_FLAG_FALSE = 0;
 
     /**
-     * redis存储token设置的过期时间，10分钟
+     * redis 存储 token 设置的过期时间，2 两小时
      */
-    public static final Integer TOKEN_EXPIRE_TIME = 60 * 10;
+    public static final Integer TOKEN_EXPIRE_TIME = 60 * 60 * 2;
 
     /**
-     * 设置可以重置token过期时间的时间界限
+     * 设置可以重置 token 过期时间的时间界限
      */
-    public static final Integer TOKEN_RESET_TIME = 1000 * 100;
+    public static final Integer TOKEN_RESET_TIME = 30 * 60;
 
 
 }

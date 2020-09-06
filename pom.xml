@@ -79,16 +79,6 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
             <version>2.3.3.RELEASE</version>
         </dependency>
-
-        <!-- 把实体类转换成 JSON 的工具 -->
-        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.11.2</version>
-        </dependency>
-
-
         <!--
             需要配置连接池，所以要引入这个包
             ==============科普=================
