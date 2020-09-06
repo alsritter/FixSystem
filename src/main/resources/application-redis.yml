@@ -2,8 +2,8 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-    # 连接超时时间（ms）
-    timeout: 10000
+    # 连接超时时间（ms） 这里是 15小时
+    timeout: 54000000
     # Redis默认情况下有16个分片，这里配置具体使用的分片，默认是0
     database: 0
     lettuce:
