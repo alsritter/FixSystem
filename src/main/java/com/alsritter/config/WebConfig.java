@@ -1,5 +1,6 @@
 package com.alsritter.config;
 
+import com.alsritter.interceptor.AllParamNotNullInterceptor;
 import com.alsritter.interceptor.AuthorizationInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,11 @@ public class WebConfig implements WebMvcConfigurer {
         return new AuthorizationInterceptor();
     }
 
+    @Bean
+    public AllParamNotNullInterceptor allParamNotNullInterceptor() {
+        return new AllParamNotNullInterceptor();
+    }
+
     // 设置编码
     @Bean
     public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
@@ -43,7 +49,8 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 拦截所有路径  /** 表示这个请求下的所有请求 /* 只拦截一级请求
-        registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/admin/**");
+        registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(allParamNotNullInterceptor()).addPathPatterns("/**");
     }
 
     // 非简单请求的CORS请求，会在正式通信之前，增加一次 HTTP 查询请求，称为"预检"请求（preflight）,

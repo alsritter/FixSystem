@@ -26,5 +26,13 @@ public final class ConstantKit {
      */
     public static final Integer TOKEN_RESET_TIME = 30 * 60;
 
+    /**
+     * 设置验证码到期时间为 5 分钟
+     */
+    public static final Integer IMAGE_CODE_EXPIRE_TIME = 5 * 60;
 
+    /**
+     * 加上这个可方便和其它 key 产生冲突
+     */
+    public static final String IMAGE_CODE = "IMAGE_CODE";
 }

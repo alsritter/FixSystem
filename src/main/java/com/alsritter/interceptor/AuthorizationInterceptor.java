@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
+ * 这个拦截器只拦截带有 AuthToken 注解的方法
  * @author alsritter
  * @version 1.0
  **/

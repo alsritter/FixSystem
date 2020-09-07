@@ -99,6 +99,17 @@
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
         </dependency>
+
+
+        <!-- 验证码工具 -->
+        <!-- 参考资料：https://juejin.im/post/6844903894661890055 -->
+        <dependency>
+            <groupId>com.github.penggle</groupId>
+            <artifactId>kaptcha</artifactId>
+            <version>2.3.2</version>
+        </dependency>
+
+
     </dependencies>
 
     <repositories>
