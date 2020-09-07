@@ -173,4 +173,347 @@ public class AdminController {
                 .data(orders)
                 .build();
     }
+
+
+    @DeleteMapping(value = "/order", produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String deleteOrder(long fixTableId){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 204,\n" +
+                "    \"message\": \"取消订单成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"取消订单成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @GetMapping(value = "/select-worker", produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String getLeisureWorkerList(){
+        // TODO: 等待实现
+        return "{\n" +
+                "  \"code\": 200,\n" +
+                "  \"message\": \"获取空闲工人列表\",\n" +
+                "  \"data\": [\n" +
+                "    {\n" +
+                "      \"workId\": \"201825070120\",\n" +
+                "      \"workerName\": \"张师傅\",\n" +
+                "      \"grade\": 2.2\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"workId\": \"201825070120\",\n" +
+                "      \"workerName\": \"李师傅\",\n" +
+                "      \"grade\": 3.1\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"workId\": \"201825070120\",\n" +
+                "      \"workerName\": \"梁师傅\",\n" +
+                "      \"grade\": 4.2\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+    }
+
+    @PatchMapping(value = "/select-worker" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String selectLeisureWorker(String workId){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 200,\n" +
+                "    \"message\": \"选择成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"选择成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @PatchMapping(value = "/user" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String updateUser(String workId, String phone, String gender){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 200,\n" +
+                "    \"message\": \"更新成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"更新成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @GetMapping(value = "/tool-list", produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String getToolList(){
+        // TODO: 等待实现
+        return "{\n" +
+                "   \"code\": 200,\n" +
+                "   \"message\": \"获取耗材\",\n" +
+                "   \"data\": [\n" +
+                "       {\n" +
+                "       \"toolId\": 1,\n" +
+                "       \"toolName\": \"水管\",\n" +
+                "       \"toolCount\": 100\n" +
+                "       },\n" +
+                "       {\n" +
+                "       \"toolId\": 2,\n" +
+                "       \"toolName\": \"胶布\",\n" +
+                "       \"toolCount\": 100\n" +
+                "       },\n" +
+                "       {\n" +
+                "       \"toolId\": 3,\n" +
+                "       \"toolName\": \"网线\",\n" +
+                "       \"toolCount\": 100\n" +
+                "       }\n" +
+                "   ]\n" +
+                "}";
+    }
+
+    @PatchMapping(value = "/tool" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String updateTool(long toolId, long toolCount){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 200,\n" +
+                "    \"message\": \"修改成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"修改成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @PostMapping(value = "/tool" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String createTool(String toolName, long toolCount){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 201,\n" +
+                "    \"message\": \"创建成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"创建成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @DeleteMapping(value = "/tool" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String deleteTool(long toolId){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 204,\n" +
+                "    \"message\": \"删除成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"删除成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @GetMapping(value = "/student-list", produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String getStudentList(){
+        // TODO: 等待实现
+        return "{\n" +
+                "  \"code\": 200,\n" +
+                "  \"message\": \"学生列表\",\n" +
+                "  \"data\": [\n" +
+                "    {\n" +
+                "      \"studentId\": \"201825070120\",\n" +
+                "      \"name\": \"张三\",\n" +
+                "      \"gender\": \"男\",\n" +
+                "      \"phone\": \"13128866666\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"studentId\": \"201825070120\",\n" +
+                "      \"name\": \"张三\",\n" +
+                "      \"gender\": \"男\",\n" +
+                "      \"phone\": \"13128866666\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"studentId\": \"201825070120\",\n" +
+                "      \"name\": \"张三\",\n" +
+                "      \"gender\": \"男\",\n" +
+                "      \"phone\": \"13128866666\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+    }
+
+    @DeleteMapping(value = "/student" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String deleteStudent(String studentId){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 204,\n" +
+                "    \"message\": \"删除成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"删除成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @GetMapping(value = "/worker-list", produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String getWorkerList(){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 200,\n" +
+                "    \"message\": \"职员列表\",\n" +
+                "    \"data\": [\n" +
+                "        {\n" +
+                "            \"workId\": \"201825070120\",\n" +
+                "            \"name\": \"张三\",\n" +
+                "            \"gender\": \"男\",\n" +
+                "            \"phone\": \"13128866666\",\n" +
+                "            \"joinDate\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "            \"orderNumber\": 120,\n" +
+                "            \"details\": \"的撒娇花费很少看到哈克贺卡圣诞贺卡计划\",\n" +
+                "            \"avgGrade\": 5,\n" +
+                "            \"state\": 0\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"workId\": \"201825070120\",\n" +
+                "            \"name\": \"张三\",\n" +
+                "            \"gender\": \"男\",\n" +
+                "            \"phone\": \"13128866666\",\n" +
+                "            \"joinDate\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "            \"orderNumber\": 120,\n" +
+                "            \"details\": \"的撒娇花费很少看到哈克贺卡圣诞贺卡计划\",\n" +
+                "            \"avgGrade\": 5,\n" +
+                "            \"state\": 1\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}";
+    }
+
+    @PostMapping(value = "/sign-up-w" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String signUpWorker(String workId, String password, String phone, String gender, String details){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 201,\n" +
+                "    \"message\": \"注册成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"注册成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @DeleteMapping(value = "/worker" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String deleteWorker(String workId){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 204,\n" +
+                "    \"message\": \"删除成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"删除成功\"\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @GetMapping(value = "/worker", produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String getWorker(String workId){
+        // TODO: 等待实现
+        return "{\n" +
+                " \"code\": 200,\n" +
+                " \"message\": \"工人详情页\",\n" +
+                " \"data\": {\n" +
+                "     \"workId\": \"201825070120\",\n" +
+                "     \"name\": \"张三\",\n" +
+                "     \"gender\": \"男\",\n" +
+                "     \"joinDate\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "     \"phone\": \"13128866666\",\n" +
+                "     \"details\": \"工人的详细介绍信息\",\n" +
+                "     \"avgGrade\": 5,\n" +
+                "     \"ordersNumber\": 15,\n" +
+                "     \"ordersNumberToday\": 1,\n" +
+                "     \"type\": {\n" +
+                "         \"网络\": 10,\n" +
+                "         \"水电\": 25,\n" +
+                "         \"其它\": 30\n" +
+                "     },\n" +
+                "     \"thisMonth\": [\n" +
+                "         {\n" +
+                "             \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "             \"grade\": 4.2\n" +
+                "         },\n" +
+                "         {\n" +
+                "             \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "             \"grade\": 3.2\n" +
+                "         },\n" +
+                "         {\n" +
+                "             \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "             \"grade\": 2.2\n" +
+                "         }\n" +
+                "     ]\n" +
+                " }\n" +
+                "}";
+    }
+
+    @GetMapping(value = "/statistics", produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String getStatistics(){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 200,\n" +
+                "    \"message\": \"统计页\",\n" +
+                "    \"data\": {\n" +
+                "        \"ordersNumber\": 15,\n" +
+                "        \"ordersNumber_0\": 2,\n" +
+                "        \"ordersNumber_1\": 2,\n" +
+                "        \"ordersNumber_2\": 2,\n" +
+                "        \"thisMonth\": [\n" +
+                "            {\n" +
+                "                \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "                \"grade\": 4.2\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "                \"grade\": 3.2\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "                \"grade\": 2.2\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }\n" +
+                "}";
+    }
+
+    @GetMapping(value = "/massage-list", produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String getMassageList(){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 200,\n" +
+                "    \"message\": \"消息中心\",\n" +
+                "    \"data\": [\n" +
+                "        {\n" +
+                "            \"massageId\": 15,\n" +
+                "            \"name\": \"发布者名字\",\n" +
+                "            \"createDate\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "            \"massage\": \"消息中心\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"massageId\": 16,\n" +
+                "            \"name\": \"发布者名字\",\n" +
+                "            \"createDate\": \"2020-08-09T20:36:26.000Z\",\n" +
+                "            \"massage\": \"消息中心\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}";
+    }
+
+    @PostMapping(value = "/massage" , produces = "application/json;charset=utf-8")
+    @AuthToken
+    public String pushMassage(String workId, String massage){
+        // TODO: 等待实现
+        return "{\n" +
+                "    \"code\": 201,\n" +
+                "    \"message\": \"创建成功\",\n" +
+                "    \"data\": {\n" +
+                "        \"status\": \"创建成功\"\n" +
+                "    }\n" +
+                "}";
+    }
 }
