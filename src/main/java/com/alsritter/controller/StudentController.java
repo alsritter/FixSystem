@@ -152,7 +152,7 @@ public class StudentController {
     @AllParamNotNull
     public ResponseTemplate<Boolean> studentIsExist(@NonNull String studentId) {
 
-        boolean flag = studentService.getStudent(studentId) != null;
+        boolean flag = studentService.isExistRedis(studentId);
 
         return ResponseTemplate.<Boolean>builder()
                 .code(200)

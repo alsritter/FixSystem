@@ -2,10 +2,13 @@ package com.alsritter.services;
 
 import com.alsritter.mappers.StudentMapper;
 import com.alsritter.pojo.Student;
+import com.alsritter.utils.ConstantKit;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Set;
 
 /**
  * @author alsritter
@@ -17,6 +20,9 @@ public class StudentService {
     @Resource
     public StudentMapper studentMapper;
 
+    @Resource
+    StringRedisTemplate stringTemplate;
+
     public Student loginStudent(String studentId, String password) {
         return studentMapper.loginStudent(studentId, password);
     }
@@ -25,7 +31,24 @@ public class StudentService {
         return studentMapper.getStudent(studentId);
     }
 
+    // 判断是否存在 redis 中
+    public boolean isExistRedis(String studentId) {
+        Set<String> members = stringTemplate.opsForSet().members(ConstantKit.STUDENT_ID_LIST);
+        for (String s : members) {
+            if (s.equals(studentId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // 更新一下 redis 的数据
     public int signUpStudent(String studentId, String name, String password, String phone, String gender) {
-        return studentMapper.signUpStudent(studentId,name,password,phone,gender);
+        int i = studentMapper.signUpStudent(studentId, name, password, phone, gender);
+        // 插入数据后再更新 redis
+        if (i != 0) {
+            stringTemplate.opsForSet().add(ConstantKit.STUDENT_ID_LIST, studentId);
+        }
+        return i;
     }
 }

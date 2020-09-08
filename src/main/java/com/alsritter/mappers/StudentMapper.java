@@ -5,6 +5,8 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 public interface StudentMapper {
     // 如果只有一个映射可以直接使用 @Result 而不是 @Results
     @Result(column = "student_id", property = "studentId")
@@ -19,4 +21,8 @@ public interface StudentMapper {
     @Insert("insert into STUDENT_TB (student_id, name, gender, password, phone) " +
             "VALUES (#{studentId},#{name},#{gender},#{password},#{phone})")
     int signUpStudent(String studentId, String name, String password, String phone, String gender);
+
+    // 用来把学生 id 更新到 redis
+    @Select("select student_id from STUDENT_TB")
+    List<String> getStudentIdList();
 }

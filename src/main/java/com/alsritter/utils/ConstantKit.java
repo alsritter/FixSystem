@@ -35,4 +35,9 @@ public final class ConstantKit {
      * 加上这个可方便和其它 key 产生冲突
      */
     public static final String IMAGE_CODE = "IMAGE_CODE";
+
+    /**
+     * 加上这个可方便和其它 key 产生冲突
+     */
+    public static final String STUDENT_ID_LIST = "STUDENT_ID_LIST";
 }
