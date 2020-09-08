@@ -22,42 +22,38 @@
 | 200      | OK                    | 请求成功                                            |
 | 201      | CREATED               | 创建成功                                            |
 | 204      | DELETED               | 删除成功                                            |
-| 400      | BAD REQUEST           | 请求的地址不存在或者包含不支持的参数                |
+| 400      | BAD REQUEST           | 请求的地址不存在或者包含不支持的参数                   |
 | 401      | UNAUTHORIZED          | 未授权                                              |
 | 403      | FORBIDDEN             | 被禁止访问                                          |
-| 404      | NOT FOUND             | 请求的资源不存在                                    |
-| 422      | Unprocesable entity   | [POST/PUT/PATCH] 当创建一个对象时，发生一个验证错误 |
+| 404      | NOT FOUND             | 请求的资源不存在                                     |
+| 422      | Unprocesable entity   | [POST/PUT/PATCH] 当创建一个对象时，发生一个验证错误    |
 | 500      | INTERNAL SERVER ERROR | 内部错误                                            |
 |          |                       |                                                     |
 
 ------
 
 ### 检查登陆状态
-浏览器和服务器之间时通过 session 来确定连接状态的，浏览器第一次请求时服务端会自动生成一个 session，并将这个 sessionId 传回给浏览器，浏览器将这个 sessionId 存放在 cookie 中，下一次浏览器访问服务器时就会将这个 sessionId 以 cookie 的形式传递到服务器，服务器接送到这个 sessionId 后就可以判断发送这个请求的浏览器之前是否访问过。
+浏览器和服务器之间时通过 Token 来确定连接状态，浏览器发起登陆成功服务端会自动生成一个 Token，服务器存一份 Token 到 redis 缓存数据库中并设置好超时时间 传回给浏览器，浏览器将这个 Token 存放在 localStorage 中，浏览器加个拦截器，每次访问服务器都把 Token 放在 Authorization 头里面，服务器得到这个 Token 后就可以判断这个用户是否登陆（或者是否登陆超时）
 
-　　在进行登录认证逻辑时，通常会在登录认证成功后将用户信息保存到 session 中；整个系统会对出登录和登出操作之外的请求进行拦截，在拦截器中会判断 session 中是否有用户的数据，如果有就跳转到 controller 层执行对应的请求，如果没有就直接返回一个提示信息。（PS: 每个客户端第一次访问服务器时服务端都会自动创建一个 session）
 
-![image.png](https://i.loli.net/2020/09/03/QBVtMLDSywhc1sk.png)
+![image.png](https://i.loli.net/2020/09/08/3IRHlf1aYNh4mnS.png)
 
-前端登陆后，后端在 session 作用域里添加一个标识符（学号 or 工号），除登陆和注册请求之外的请求都需要先判断是否有这个标识符
 
-### sessionStorage
-存储在 sessionStorage 里面的数据在页面会话结束时会被清除。
-也就是说：新开一个页面就是一个新的 sessionStorage
+### localStorage
+存储在 localStorage 里面的数据在页面会持久的保存到本地，所以可以做免密登陆
 
-如果关闭浏览器或该页面，sessionStorage 的数据就会消失
 ```js
-// 保存数据到 sessionStorage
-sessionStorage.setItem('key', 'value');
+// 保存数据到 localStorage
+localStorage.setItem('key', 'value');
 
-// 从 sessionStorage 获取数据
-let data = sessionStorage.getItem('key');
+// 从 localStorage 获取数据
+let data = localStorage.getItem('key');
 
-// 从 sessionStorage 删除保存的数据
-sessionStorage.removeItem('key');
+// 从 localStorage 删除保存的数据
+localStorage.removeItem('key');
 
-// 从 sessionStorage 删除所有保存的数据
-sessionStorage.clear();
+// 从 localStorage 删除所有保存的数据
+localStorage.clear();
 ```
 
 ### 返回的数据格式
@@ -68,6 +64,41 @@ sessionStorage.clear();
     "data": {
         ...
     }
+}
+```
+
+## 通用工具 api
+### 请求验证码
+- 请求路径：utils/pb/code
+- get
+- 请求参数
+
+| 参数名   | 参数说明 | 备注     |
+| -------- | -------- | -------- |
+| uuid | 验证码的key   | 不能为空 |
+
+
+- 响应数据
+
+![image.png](https://i.loli.net/2020/09/07/xOip5YLZB4fXs2d.png)
+
+
+### 检查是否存在
+- 请求路径：utils/is-exist
+- 请求方法：get
+- 请求参数
+
+| 参数名   | 参数说明 | 备注     |
+| -------- | -------- | -------- |
+| studentId 或者 workId | id   | 不能为空 |
+
+- 响应数据
+
+```json
+{
+    "code": 200,
+    "message": "当前用户不存在",
+    "data": false
 }
 ```
 
@@ -84,6 +115,8 @@ sessionStorage.clear();
 | -------- | -------- | -------- |
 | studentId | 学生 id   | 不能为空 |
 | password | 密码     | 不能为空 |
+| uuid | 验证码的key   | 不能为空 |
+| image_code | 验证码的值   | 不能为空 |
 
 - 响应数据
 
@@ -104,19 +137,6 @@ sessionStorage.clear();
 
 前端拿到数据之后存在 sessionStorage，以后之前读取这里面的东西就好了（注意 Token）
 
-### 请求验证码
-- 请求路径：student/pb/code
-- get
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| uuid | 验证码的key   | 不能为空 |
-
-
-- 响应数据
-
-![image.png](https://i.loli.net/2020/09/07/xOip5YLZB4fXs2d.png)
 
 ### 注册
 
@@ -153,25 +173,6 @@ sessionStorage.clear();
 ```
 
 后端注册成功后需要刷新 redis 缓存的数据
-
-### 检查是否存在
-- 请求路径：student/is-exist
-- 请求方法：patch
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| studentId | 学生 id   | 不能为空 |
-
-- 响应数据
-
-```json
-{
-    "code": 200,
-    "message": "当前学生不存在",
-    "data": false
-}
-```
 
 
 ### 个人中心
@@ -386,6 +387,8 @@ sessionStorage.clear();
 | -------- | -------- | -------- |
 | workId | 工号   | 不能为空 |
 | password | 密码     | 不能为空 |
+| uuid | 验证码的key   | 不能为空 |
+| image_code | 验证码的值   | 不能为空 |
 
 - 响应数据
 
@@ -605,6 +608,8 @@ sessionStorage.clear();
 | -------- | -------- | -------- |
 | workId | 工号   | 不能为空 |
 | password | 密码     | 不能为空 |
+| uuid | 验证码的key   | 不能为空 |
+| image_code | 验证码的值   | 不能为空 |
 
 - 响应数据
 
@@ -636,7 +641,7 @@ sessionStorage.clear();
 ```
 
 
-### 任务列
+### 获取任务List 👌
 
 - 请求路径：admin/order-list
 - 请求方法：get
@@ -857,7 +862,7 @@ sessionStorage.clear();
 ### 选择工人
 
 - 请求路径：admin/select-worker
-- 请求方法：patch
+- 请求方法：get
 - 请求参数
 
 | 参数名   | 参数说明 | 备注     |
@@ -1039,28 +1044,6 @@ sessionStorage.clear();
 }
 ```
 
-### 删除学生
-- 请求路径：admin/student
-- 请求方法：delete
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| studentId | 学号    | 不能为空 |
-
-- 响应数据
-
-```json
-// 注意：删除成功了别忘记刷新页面
-
-{
-    "code": 204,
-    "message": "删除成功",
-    "data": {
-        "status": "删除成功"
-    }
-}
-```
 
 
 ### 职工列表
@@ -1103,7 +1086,7 @@ sessionStorage.clear();
 
 ```
 
-### 维修工注册
+### 录入维修工
 
 - 请求路径：admin/sign-up-w
 - 请求方法：post
@@ -1129,29 +1112,6 @@ sessionStorage.clear();
 }
 ```
 
-
-### 删除职员
-- 请求路径：admin/worker
-- 请求方法：delete
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| workId | 工号    | 不能为空 |
-
-- 响应数据
-
-```json
-// 注意：删除成功了别忘记刷新页面
-
-{
-    "code": 204,
-    "message": "删除成功",
-    "data": {
-        "status": "删除成功"
-    }
-}
-```
 
 ### 工人详情页
 
