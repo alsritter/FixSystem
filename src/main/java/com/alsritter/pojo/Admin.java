@@ -11,7 +11,6 @@ import java.util.Date;
 public class Admin {
 
   private String workId;
-  private long uright;
   private String name;
   private String gender;
   private String password;

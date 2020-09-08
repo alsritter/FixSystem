@@ -2,8 +2,8 @@ package com.alsritter.controller;
 
 import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.model.ResponseTemplate;
-import com.alsritter.pojo.Student;
-import com.alsritter.services.StudentService;
+import com.alsritter.pojo.Worker;
+import com.alsritter.services.WorkerService;
 import com.alsritter.utils.ConstantKit;
 import com.alsritter.utils.Md5TokenGenerator;
 import com.google.code.kaptcha.Producer;
@@ -12,7 +12,6 @@ import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -23,14 +22,10 @@ import java.awt.image.BufferedImage;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-/**
- * @author alsritter
- * @version 1.0
- **/
 @Slf4j
 @RestController
-@RequestMapping("/student")
-public class StudentController {
+@RequestMapping("/worker")
+public class WorkerController {
     private Producer captchaProducer;
 
     @Autowired
@@ -38,11 +33,11 @@ public class StudentController {
         this.captchaProducer = captchaProducer;
     }
 
-    private StudentService studentService;
+    private WorkerService workerService;
 
     @Autowired
-    public void setStudentService(StudentService studentService) {
-        this.studentService = studentService;
+    public void setWorkerService(WorkerService workerService) {
+        this.workerService = workerService;
     }
 
     private Md5TokenGenerator tokenGenerator;
@@ -56,9 +51,9 @@ public class StudentController {
     StringRedisTemplate stringTemplate;
 
     @PostMapping("/login")
-    public ResponseTemplate<JSONObject> login(String studentId, String password) {
+    public ResponseTemplate<JSONObject> login(String workId, String password) {
         // 先查询数据
-        Student user = studentService.loginStudent(studentId, password);
+        Worker user = workerService.loginWorker(workId,password);
 
         // 先创建对象，下面分别赋值
         JSONObject result = new JSONObject();
@@ -71,33 +66,33 @@ public class StudentController {
             ValueOperations<String, String> valueOperations = stringTemplate.opsForValue();
 
             // 需要先检查当前是否已经有 Token 了,如果已经有 Token 了先销毁之前的 Token,再创建新的
-            String beforeToken = valueOperations.get(studentId);
+            String beforeToken = valueOperations.get(workId);
             if (beforeToken != null && !beforeToken.trim().equals("")) {
                 // 只需删除用 token 当 key 存的 workId,因为 workId 当 key 的那个会给覆盖掉
                 stringTemplate.delete(beforeToken);
                 // 还需要把那个由 token + workId 组成的用来记录创建时间的 key 删掉
-                stringTemplate.delete(beforeToken + studentId);
+                stringTemplate.delete(beforeToken + workId);
                 log.debug("删除了之前的 Token: {}", beforeToken);
             }
 
             // 生成新的 Token
-            String token = tokenGenerator.generate(studentId, password);
+            String token = tokenGenerator.generate(workId, password);
 
-            valueOperations.set(studentId, token);
+            valueOperations.set(workId, token);
             //设置 key 生存时间，当 key 过期时，它会被自动删除，时间是秒
-            stringTemplate.expire(studentId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
+            stringTemplate.expire(workId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
 
-            valueOperations.set(token, studentId);
+            valueOperations.set(token, workId);
             stringTemplate.expire(token, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
 
             // 这一步主要是记录创建的时间，拦截器通过创建时间计算还有多久过期
-            valueOperations.set(token + studentId, Long.toString(System.currentTimeMillis()));
-            stringTemplate.expire(token + studentId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
+            valueOperations.set(token + workId, Long.toString(System.currentTimeMillis()));
+            stringTemplate.expire(token + workId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
 
             code = HttpServletResponse.SC_OK;
             massage = "登陆成功";
             result.put("status", "登录成功");
-            result.put("studentId", user.getStudentId());
+            result.put("studentId", user.getWorkId());
             result.put("name", user.getName());
             result.put("gender", user.getGender());
             result.put("phone", user.getPhone());
@@ -148,18 +143,6 @@ public class StudentController {
         }
     }
 
-    @GetMapping("/is-exist")
-    @AllParamNotNull
-    public ResponseTemplate<Boolean> studentIsExist(@NonNull String studentId) {
-
-        boolean flag = studentService.isExistRedis(studentId);
-
-        return ResponseTemplate.<Boolean>builder()
-                .code(200)
-                .message(flag ? "当前的学生存在" : "当前学生不存在")
-                .data(flag)
-                .build();
-    }
 
     /**
      * 就是先通过前端传过来的 uuid 生成验证码，然后存到 redis 里面
@@ -207,7 +190,7 @@ public class StudentController {
 
         //验证学号是否正确(只能是数字和 "-")
         if (!Pattern.compile("^-?\\d+(\\.\\d+)?$").matcher(studentId).matches()) {
-            result.put("status", "学号格式错误");
+            result.put("status", "工号格式错误");
 
             return ResponseTemplate.<JSONObject>builder()
                     .code(422)
@@ -217,7 +200,7 @@ public class StudentController {
         }
 
         //检验是否已经有这个学生了
-        if (studentService.getStudent(studentId) != null) {
+        if (workerService.getWorker(password) != null) {
             result.put("status", "学生已经存在");
 
             return ResponseTemplate.<JSONObject>builder()
@@ -240,15 +223,7 @@ public class StudentController {
                     .build();
         }
 
-        if (studentService.signUpStudent(studentId, name, password, phone, gender) == 0) {
-            result.put("status", "创建错误");
 
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(500)
-                    .message("创建错误")
-                    .data(result)
-                    .build();
-        }
 
         // 如果成功插入则直接调用上面的登陆方法
         return login(studentId, password);
@@ -256,8 +231,8 @@ public class StudentController {
 
     @PatchMapping("/user")
     @AllParamNotNull
-    public ResponseTemplate<JSONObject> updateStudent(String studentId, String name, String phone) {
-        int i = studentService.updateStudent(studentId, name, phone);
+    public ResponseTemplate<JSONObject> updateWorker(String workId, String name, String phone) {
+        int i = workerService.WorkerMapper.updateWorker(workId, name, phone);
         JSONObject result = new JSONObject();
 
         if(i==0){
