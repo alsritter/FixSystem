@@ -5,13 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * 检查参数是否为空
- *
- * @author alsritter
- * @version 1.0
- **/
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AllParamNotNull {
+public @interface ParamNotNull {
+    String param() default "";
+
+    String[] params() default {};
 }

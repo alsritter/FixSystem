@@ -1,6 +1,6 @@
 package com.alsritter.config;
 
-import com.alsritter.interceptor.AllParamNotNullInterceptor;
+import com.alsritter.interceptor.ParamNotNullInterceptor;
 import com.alsritter.interceptor.AuthorizationInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +26,8 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public AllParamNotNullInterceptor allParamNotNullInterceptor() {
-        return new AllParamNotNullInterceptor();
+    public ParamNotNullInterceptor allParamNotNullInterceptor() {
+        return new ParamNotNullInterceptor();
     }
 
     // 设置编码

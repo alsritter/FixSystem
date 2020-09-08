@@ -253,4 +253,31 @@ public class StudentController {
         // 如果成功插入则直接调用上面的登陆方法
         return login(studentId, password);
     }
+
+    @PatchMapping("/user")
+    @AllParamNotNull
+    public ResponseTemplate<JSONObject> updateStudent(String studentId, String name, String phone) {
+        int i = studentService.updateStudent(studentId, name, phone);
+        JSONObject result = new JSONObject();
+
+        if(i==0){
+            result.put("status", "创建错误");
+
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(500)
+                    .message("创建错误")
+                    .data(result)
+                    .build();
+        }else {
+            result.put("status", "修改成功");
+
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(200)
+                    .message("修改成功")
+                    .data(result)
+                    .build();
+        }
+    }
+
+
 }
