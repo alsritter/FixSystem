@@ -1,59 +1,57 @@
 package com.alsritter.controller;
 
-import com.alsritter.annotation.AllParamNotNull;
+import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.Worker;
 import com.alsritter.services.WorkerService;
 import com.alsritter.utils.ConstantKit;
 import com.alsritter.utils.Md5TokenGenerator;
-import com.google.code.kaptcha.Producer;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 @Slf4j
 @RestController
 @RequestMapping("/worker")
 public class WorkerController {
-    private Producer captchaProducer;
 
-    @Autowired
-    public void setCaptchaProducer(Producer captchaProducer) {
-        this.captchaProducer = captchaProducer;
-    }
 
+    @Resource
+    StringRedisTemplate stringTemplate;
     private WorkerService workerService;
+    private Md5TokenGenerator tokenGenerator;
+
 
     @Autowired
     public void setWorkerService(WorkerService workerService) {
         this.workerService = workerService;
     }
 
-    private Md5TokenGenerator tokenGenerator;
 
     @Autowired
     public void setTokenGenerator(Md5TokenGenerator tokenGenerator) {
         this.tokenGenerator = tokenGenerator;
     }
 
-    @Resource
-    StringRedisTemplate stringTemplate;
 
     @PostMapping("/login")
-    public ResponseTemplate<JSONObject> login(String workId, String password) {
+    @AuthImageCode
+    public ResponseTemplate<JSONObject> login(
+            String codevalue,
+            String uuid,
+            String workId,
+            String password) {
         // 先查询数据
-        Worker user = workerService.loginWorker(workId,password);
+        Worker user = workerService.loginWorker(workId, password);
 
         // 先创建对象，下面分别赋值
         JSONObject result = new JSONObject();
@@ -92,10 +90,14 @@ public class WorkerController {
             code = HttpServletResponse.SC_OK;
             massage = "登陆成功";
             result.put("status", "登录成功");
-            result.put("studentId", user.getWorkId());
+            result.put("workId", user.getWorkId());
             result.put("name", user.getName());
             result.put("gender", user.getGender());
             result.put("phone", user.getPhone());
+            result.put("joinDate", user.getJoinDate());
+            result.put("details", user.getDetails());
+            result.put("ordersNumber", user.getOrdersNumber());
+            result.put("avgGrade", user.getAvgGrade());
             result.put("token", token);
         } else {
             code = HttpServletResponse.SC_NOT_FOUND;
@@ -109,151 +111,4 @@ public class WorkerController {
                 .data(result)
                 .build();
     }
-
-    /**
-     * 通过前端传过来的 uuid 生成验证码，然后存到 redis 里面
-     */
-    @GetMapping("/pb/code")
-    public void getImageCode(HttpServletResponse response, @RequestParam("uuid") String uuid) {
-        // TODO: 处理下报错，添加事务
-        //禁止缓存
-        response.setDateHeader("Expires", 0);
-        response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-        response.addHeader("Cache-Control", "post-check=0, pre-check=0");
-        response.setHeader("Pragma", "no-cache");
-
-        //设置响应格式为png图片
-        response.setContentType("image/png");
-
-        //为验证码创建一个文本
-        String codeText = captchaProducer.createText();
-        //将验证码存到redis
-        stringTemplate.opsForValue().set(ConstantKit.IMAGE_CODE + uuid, codeText);
-        //设置验证码 5 分钟后到期
-        stringTemplate.expire(ConstantKit.IMAGE_CODE + uuid, ConstantKit.IMAGE_CODE_EXPIRE_TIME, TimeUnit.SECONDS);
-
-        try (ServletOutputStream out = response.getOutputStream()) {
-            // 用创建的验证码文本生成图片
-            BufferedImage bi = captchaProducer.createImage(codeText);
-            //写出图片
-            ImageIO.write(bi, "png", out);
-            out.flush();
-        } catch (Exception e) {
-            log.warn(e.getMessage());
-        }
-    }
-
-
-    /**
-     * 就是先通过前端传过来的 uuid 生成验证码，然后存到 redis 里面
-     * 等注册请求过来时，要携带之前的那个 uuid 以及输入的验证码值去
-     * 检查 redis 是否存在这个 code 存在则可以注册，否则报错
-     * <p>
-     * 然后还需要验证手机号码格式正确性
-     */
-    @PostMapping("/sign-up")
-    @AllParamNotNull
-    public ResponseTemplate<JSONObject> signUpStudent(
-            @RequestParam(value = "image_code") String validImageCode,
-            @RequestParam("uuid") String uuid,
-            String studentId,
-            String name,
-            String password,
-            String phone,
-            String gender) {
-
-        // 先创建对象，下面分别赋值
-        JSONObject result = new JSONObject();
-
-        log.debug("{} {} {} {} {} {} {}", validImageCode, uuid, studentId, name, password, phone, gender);
-        log.debug("{}", stringTemplate.opsForValue().get(ConstantKit.IMAGE_CODE + uuid));
-
-        // 先验证这个 uuid 是否存在
-        if (stringTemplate.opsForValue().get(ConstantKit.IMAGE_CODE + uuid) == null) {
-            result.put("status", "uuid超时或者不存在");
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(HttpServletResponse.SC_NOT_FOUND)
-                    .message("uuid超时或者不存在")
-                    .data(result)
-                    .build();
-        }
-
-        //先判断验证码是否正确
-        if (!stringTemplate.opsForValue().get(ConstantKit.IMAGE_CODE + uuid).trim().equals(validImageCode)) {
-            result.put("status", "验证码错误");
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(HttpServletResponse.SC_FORBIDDEN)
-                    .message("验证码错误")
-                    .data(result)
-                    .build();
-        }
-
-        //验证学号是否正确(只能是数字和 "-")
-        if (!Pattern.compile("^-?\\d+(\\.\\d+)?$").matcher(studentId).matches()) {
-            result.put("status", "工号格式错误");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(422)
-                    .message("学号格式错误")
-                    .data(result)
-                    .build();
-        }
-
-        //检验是否已经有这个学生了
-        if (workerService.getWorker(password) != null) {
-            result.put("status", "学生已经存在");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(422)
-                    .message("学生已经存在")
-                    .data(result)
-                    .build();
-        }
-
-
-        //验证手机号码正确性
-        String regex = "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$";
-        if (!Pattern.compile(regex).matcher(phone).matches()) {
-            result.put("status", "手机号错误");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(422)
-                    .message("手机号错误")
-                    .data(result)
-                    .build();
-        }
-
-
-
-        // 如果成功插入则直接调用上面的登陆方法
-        return login(studentId, password);
-    }
-
-    @PatchMapping("/user")
-    @AllParamNotNull
-    public ResponseTemplate<JSONObject> updateWorker(String workId, String name, String phone) {
-        int i = workerService.WorkerMapper.updateWorker(workId, name, phone);
-        JSONObject result = new JSONObject();
-
-        if(i==0){
-            result.put("status", "创建错误");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(500)
-                    .message("创建错误")
-                    .data(result)
-                    .build();
-        }else {
-            result.put("status", "修改成功");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(200)
-                    .message("修改成功")
-                    .data(result)
-                    .build();
-        }
-    }
-
-
-
 }

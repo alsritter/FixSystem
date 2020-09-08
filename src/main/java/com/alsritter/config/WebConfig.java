@@ -1,7 +1,8 @@
 package com.alsritter.config;
 
+import com.alsritter.interceptor.AuthorizationImageCodeInterceptor;
 import com.alsritter.interceptor.ParamNotNullInterceptor;
-import com.alsritter.interceptor.AuthorizationInterceptor;
+import com.alsritter.interceptor.AuthorizationTokenInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -21,13 +22,18 @@ import java.util.List;
 public class WebConfig implements WebMvcConfigurer {
     // 注册拦截器 MyInterceptor 前面自定义的 拦截器
     @Bean
-    public AuthorizationInterceptor authorizationInterceptor() {
-        return new AuthorizationInterceptor();
+    public AuthorizationTokenInterceptor authorizationInterceptor() {
+        return new AuthorizationTokenInterceptor();
     }
 
     @Bean
     public ParamNotNullInterceptor allParamNotNullInterceptor() {
         return new ParamNotNullInterceptor();
+    }
+
+    @Bean
+    public AuthorizationImageCodeInterceptor authorizationImageCodeInterceptor(){
+        return new AuthorizationImageCodeInterceptor();
     }
 
     // 设置编码
@@ -51,6 +57,7 @@ public class WebConfig implements WebMvcConfigurer {
         // 拦截所有路径  /** 表示这个请求下的所有请求 /* 只拦截一级请求
         registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/**");
         registry.addInterceptor(allParamNotNullInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(authorizationImageCodeInterceptor()).addPathPatterns("/**");
     }
 
     // 非简单请求的CORS请求，会在正式通信之前，增加一次 HTTP 查询请求，称为"预检"请求（preflight）,

@@ -1,6 +1,8 @@
 package com.alsritter;
 
+import com.alsritter.mappers.AdminMapper;
 import com.alsritter.mappers.StudentMapper;
+import com.alsritter.mappers.WorkerMapper;
 import com.alsritter.utils.ConstantKit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -9,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 启动前先把 mysql 的数据加载到 redis
@@ -29,24 +30,34 @@ public class LoadRedisRunner implements CommandLineRunner {
     @Resource
     public StudentMapper studentMapper;
 
+    @Resource
+    public WorkerMapper workerMapper;
+
+    @Resource
+    public AdminMapper adminMapper;
+
     @Override
     public void run(String... args) throws Exception {
         log.info("LoadRedisRunner 开始执行");
-        // 先检查当前 redis 是否有数据，有就跳过
-        Set<String> members = stringTemplate.opsForSet().members(ConstantKit.STUDENT_ID_LIST);
-        if (members != null) {
-            if (!members.isEmpty()){
-                members.forEach(o -> log.debug("已存在数据：{}", o));
-                return;
-            }
-        }
-
         log.info("开始加载数据到 redis");
         List<String> studentIdList = studentMapper.getStudentIdList();
+        List<String> workerIdList = workerMapper.getWorkerIdList();
+        List<String> adminWorkerIdList = adminMapper.getWorkerIdList();
+
+
         // 保存到 set 集合上去，避免元素冲突
-        studentIdList.forEach( o ->{
-            stringTemplate.opsForSet().add(ConstantKit.STUDENT_ID_LIST, o);
+        studentIdList.forEach(o -> {
+            stringTemplate.opsForSet().add(ConstantKit.USER_ID_LIST, o);
         });
-        stringTemplate.opsForSet().members(ConstantKit.STUDENT_ID_LIST).forEach(o-> log.debug("新增数据：{}", o));
+
+        workerIdList.forEach(o -> {
+            stringTemplate.opsForSet().add(ConstantKit.USER_ID_LIST, o);
+        });
+
+        adminWorkerIdList.forEach(o -> {
+            stringTemplate.opsForSet().add(ConstantKit.USER_ID_LIST, o);
+        });
+
+        stringTemplate.opsForSet().members(ConstantKit.USER_ID_LIST).forEach(o -> log.debug("当前数据：{}", o));
     }
 }

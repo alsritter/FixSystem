@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * @version 1.0
  **/
 @Slf4j
-public class AuthorizationInterceptor implements HandlerInterceptor {
+public class AuthorizationTokenInterceptor implements HandlerInterceptor {
 
     // 注入到 request 作用域里，使拦截器后的 Controller 可以读取到
     public static final String REQUEST_CURRENT_KEY = "REQUEST_CURRENT_KEY";

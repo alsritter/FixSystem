@@ -39,5 +39,5 @@ public final class ConstantKit {
     /**
      * 加上这个可方便和其它 key 产生冲突
      */
-    public static final String STUDENT_ID_LIST = "STUDENT_ID_LIST";
+    public static final String USER_ID_LIST = "USER_ID_LIST";
 }

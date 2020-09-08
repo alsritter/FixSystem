@@ -1,5 +1,7 @@
 package com.alsritter.controller;
 
+import com.alsritter.annotation.AllParamNotNull;
+import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.Admin;
@@ -55,7 +57,13 @@ public class AdminController {
 
 
     @PostMapping(value = "/login")
-    public ResponseTemplate<JSONObject> login(String workId, String password) {
+    @AllParamNotNull
+    @AuthImageCode
+    public ResponseTemplate<JSONObject> login(
+            String codevalue,
+            String uuid,
+            String workId,
+            String password) {
         // 先查询数据
         Admin user = loginService.adminLogin(workId, password);
 
