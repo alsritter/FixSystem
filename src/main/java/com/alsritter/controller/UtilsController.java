@@ -51,7 +51,8 @@ public class UtilsController {
      * 通过前端传过来的 uuid 生成验证码，然后存到 redis 里面
      */
     @GetMapping("/code")
-    public void getImageCode(HttpServletResponse response, @RequestParam("uuid") String uuid) {
+    @AllParamNotNull
+    public void getImageCode(HttpServletResponse response, String uuid) {
         // TODO: 处理下报错，添加事务
         //禁止缓存
         response.setDateHeader("Expires", 0);

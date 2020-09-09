@@ -4,6 +4,8 @@ import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.Worker;
 import com.alsritter.services.WorkerService;
+import com.alsritter.utils.BizException;
+import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
 import com.alsritter.utils.Md5TokenGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -52,12 +54,7 @@ public class WorkerController {
             String password) {
         // 先查询数据
         Worker user = workerService.loginWorker(workId, password);
-
-        // 先创建对象，下面分别赋值
         JSONObject result = new JSONObject();
-        int code = 500;
-        String massage = "";
-
 
         if (user != null) {
 
@@ -87,8 +84,7 @@ public class WorkerController {
             valueOperations.set(token + workId, Long.toString(System.currentTimeMillis()));
             stringTemplate.expire(token + workId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
 
-            code = HttpServletResponse.SC_OK;
-            massage = "登陆成功";
+
             result.put("status", "登录成功");
             result.put("workId", user.getWorkId());
             result.put("name", user.getName());
@@ -99,16 +95,18 @@ public class WorkerController {
             result.put("ordersNumber", user.getOrdersNumber());
             result.put("avgGrade", user.getAvgGrade());
             result.put("token", token);
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(HttpServletResponse.SC_OK)
+                    .message("登陆成功")
+                    .data(result)
+                    .build();
         } else {
-            code = HttpServletResponse.SC_NOT_FOUND;
-            massage = "登陆失败";
-            result.put("status", "登录失败");
+            result.put("status", "当前工人不存在");
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(404)
+                    .message("当前工人不存在")
+                    .data(result)
+                    .build();
         }
-
-        return ResponseTemplate.<JSONObject>builder()
-                .code(code)
-                .message(massage)
-                .data(result)
-                .build();
     }
 }

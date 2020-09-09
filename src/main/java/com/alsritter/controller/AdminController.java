@@ -8,6 +8,8 @@ import com.alsritter.pojo.Admin;
 import com.alsritter.pojo.Orders;
 import com.alsritter.services.LoginService;
 import com.alsritter.services.OrdersService;
+import com.alsritter.utils.BizException;
+import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
 import com.alsritter.utils.Md5TokenGenerator;
 import lombok.extern.slf4j.Slf4j;
@@ -66,12 +68,7 @@ public class AdminController {
             String password) {
         // 先查询数据
         Admin user = loginService.adminLogin(workId, password);
-
-        // 先创建对象，下面分别赋值
         JSONObject result = new JSONObject();
-        int code = 500;
-        String massage = "";
-
 
         if (user != null) {
 
@@ -101,8 +98,7 @@ public class AdminController {
             valueOperations.set(token + workId, Long.toString(System.currentTimeMillis()));
             stringTemplate.expire(token + workId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
 
-            code = HttpServletResponse.SC_OK;
-            massage = "登陆成功";
+
             result.put("status", "登录成功");
             result.put("workId", user.getWorkId());
             result.put("name", user.getName());
@@ -111,18 +107,19 @@ public class AdminController {
             result.put("phone", user.getPhone());
             result.put("details", user.getDetails());
             result.put("token", token);
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(HttpServletResponse.SC_OK)
+                    .message("登陆成功")
+                    .data(result)
+                    .build();
         } else {
-            code = HttpServletResponse.SC_NOT_FOUND;
-            massage = "登陆失败";
-            result.put("status", "登录失败");
+            result.put("status", "当前工人不存在");
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(404)
+                    .message("当前工人不存在")
+                    .data(result)
+                    .build();
         }
-
-        return ResponseTemplate.<JSONObject>builder()
-                .code(code)
-                .message(massage)
-                .data(result)
-                .build();
-
     }
 
     //测试权限访问
@@ -144,19 +141,11 @@ public class AdminController {
     @AuthToken
     public ResponseTemplate<List<Orders>> orderList() {
         List<Orders> allOrders = ordersService.getAllOrders();
-        // 先赋初始值是报错的，如果下面找到数据了自然会覆盖
-        int code = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-        String massage = "内部错误";
-
-        if (!allOrders.isEmpty()) {
-            code = HttpServletResponse.SC_OK;
-            massage = "订单 list";
-        }
 
         return ResponseTemplate
                 .<List<Orders>>builder()
-                .code(code)
-                .message(massage)
+                .code(HttpServletResponse.SC_OK)
+                .message("订单 list")
                 .data(allOrders)
                 .build();
     }
@@ -166,18 +155,15 @@ public class AdminController {
     @AuthToken
     public ResponseTemplate<Orders> getOrder(@RequestParam long fixTableId){
         Orders orders = ordersService.getOrders(fixTableId);
-        int code = HttpServletResponse.SC_NOT_FOUND;
-        String massage = "未找到订单";
 
-        if (orders != null) {
-            code = HttpServletResponse.SC_OK;
-            massage = "订单详情";
+        if (orders == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
         }
 
         return ResponseTemplate
                 .<Orders>builder()
-                .code(code)
-                .message(massage)
+                .code(HttpServletResponse.SC_OK)
+                .message("订单详情")
                 .data(orders)
                 .build();
     }

@@ -1,6 +1,7 @@
 package com.alsritter.mappers;
 
 import com.alsritter.pojo.Orders;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Select;
 
@@ -31,4 +32,8 @@ public interface OrderMapper {
     @Result(column = "result_details", property = "resultDetails")
     @Select("select * from ORDERS_TB where fix_table_id=#{fixTableId};")
     Orders getOrder(long fixTableId);
+
+    @Insert("insert into ORDERS_TB (student_id, contacts, create_time, address, phone, fault_class, fault_detail)\n" +
+            "values (#{studentId},#{contacts}, now(), #{address}, #{phone}, #{faultClass}, #{faultDetails})")
+    int createOrder(String studentId, String contacts, String phone, String faultClass, String address, String faultDetails);
 }

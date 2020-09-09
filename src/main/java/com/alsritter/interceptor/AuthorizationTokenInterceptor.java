@@ -1,34 +1,32 @@
 package com.alsritter.interceptor;
 
 import com.alsritter.annotation.AuthToken;
+import com.alsritter.utils.BizException;
+import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 这个拦截器只拦截带有 AuthToken 注解的方法
+ *
  * @author alsritter
  * @version 1.0
  **/
 @Slf4j
 public class AuthorizationTokenInterceptor implements HandlerInterceptor {
 
-    // 注入到 request 作用域里，使拦截器后的 Controller 可以读取到
-    public static final String REQUEST_CURRENT_KEY = "REQUEST_CURRENT_KEY";
+
 
     @Resource
     StringRedisTemplate stringTemplate;
@@ -57,11 +55,10 @@ public class AuthorizationTokenInterceptor implements HandlerInterceptor {
      * 如果用户在设置的 redis 过期时间的时间长度内没有进行任何操作（没有发请求），则 token 会在 redis 中过期。
      * </b>
      *
-     *
-     * @return : boolean
-     * @param request :
+     * @param request  :
      * @param response :
-     * @param handler :
+     * @param handler  :
+     * @return : boolean
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -113,45 +110,18 @@ public class AuthorizationTokenInterceptor implements HandlerInterceptor {
                 }
 
                 // 如果 token 验证成功，将 token 对应的 userId 存在 request 中，以后就可以无须登陆直接取到 userId
-                request.setAttribute(REQUEST_CURRENT_KEY, userId);
+                request.setAttribute(ConstantKit.REQUEST_CURRENT_KEY, userId);
                 return true;
 
                 // 如果为空则鉴权失败
             } else {
-                JSONObject jsonObject = new JSONObject();
-
-                PrintWriter out = null;
-                try {
-                    //鉴权失败后返回的HTTP错误码，默认为401
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-
-                    jsonObject.put("code", response.getStatus());
-                    jsonObject.put("message", HttpStatus.UNAUTHORIZED);
-                    // 如果失败则把消息返回出去
-                    // {
-                    //   "code": 401,
-                    //   "message": "UNAUTHORIZED"
-                    // }
-                    out = response.getWriter();
-                    out.println(jsonObject);
-
-                    return false;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    if (null != out) {
-                        out.flush();
-                        out.close();
-                    }
-                }
-
+                throw new BizException(CommonEnum.UNAUTHORIZED);
             }
 
         }
 
-        // REQUEST_CURRENT_KEY
-        request.setAttribute(REQUEST_CURRENT_KEY, null);
+        // 不需要鉴权的 api 取不到 用户 id
+        request.setAttribute(ConstantKit.REQUEST_CURRENT_KEY, null);
 
         return true;
     }

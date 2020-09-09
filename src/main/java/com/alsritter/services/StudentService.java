@@ -3,6 +3,7 @@ package com.alsritter.services;
 import com.alsritter.mappers.StudentMapper;
 import com.alsritter.pojo.Student;
 import com.alsritter.utils.ConstantKit;
+import com.alsritter.utils.MyDBError;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -36,11 +37,11 @@ public class StudentService {
     // 别忘了要配置事务
     @Transactional
     public int signUpStudent(String studentId, String name, String password, String phone, String gender) {
-        int i = 0 ;
+        int i = 0;
         try {
             i = studentMapper.signUpStudent(studentId, name, password, phone, gender);
         } catch (RuntimeException e) {
-            throw new signUpError("可能是插入重复的数据(例如主键冲突)了",e);
+            throw new MyDBError("可能是插入重复的数据(例如主键冲突)了", e);
         }
         // 插入数据后再更新 redis
         if (i != 0) {
@@ -49,24 +50,18 @@ public class StudentService {
         return i;
     }
 
-    public int updateStudent(String studentId, String name, String phone){
-        return studentMapper.updateStudent(studentId, name, phone);
+    @Transactional
+    public int updateStudent(String studentId, String name, String phone) {
+        int i = 0;
+        try {
+            i = studentMapper.updateStudent(studentId, name, phone);
+        } catch (RuntimeException e) {
+            throw new MyDBError("修改数据错误", e);
+        }
+        return i;
     }
 
-    public static class signUpError extends RuntimeException{
-        private final String msg;
-        private final Throwable throwable;
 
-        // 通过 Throwable 类来传递报错信息
-        public signUpError(String msg, Throwable throwable){
-            this.msg = msg;
-            this.throwable = throwable;
-        }
 
-        @Override
-        public String getMessage() {
-            return msg + throwable.getMessage();
-        }
-    }
 }
 

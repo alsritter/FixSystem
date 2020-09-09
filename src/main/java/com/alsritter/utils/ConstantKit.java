@@ -7,6 +7,12 @@ package com.alsritter.utils;
 public final class ConstantKit {
 
     /**
+     * 注：这个 REQUEST_CURRENT_KEY 可以读取到登陆后的学生 id（保存到 request 请求作用域里）
+     * 原理就是登陆鉴权拦截器里注入的
+     */
+    public static final String REQUEST_CURRENT_KEY = "REQUEST_CURRENT_KEY";
+
+    /**
      * 设置删除标志为真
      */
     public static final Integer DEL_FLAG_TRUE = 1;

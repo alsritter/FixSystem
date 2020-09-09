@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
- * 检查全部参数非空拦截器
+ * 检查参数非空拦截器
  *
  * @author alsritter
  * @version 1.0

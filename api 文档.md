@@ -22,12 +22,12 @@
 | 200      | OK                    | 请求成功                                            |
 | 201      | CREATED               | 创建成功                                            |
 | 204      | DELETED               | 删除成功                                            |
-| 400      | BAD REQUEST           | 请求的地址不存在或者包含不支持的参数                   |
-| 401      | UNAUTHORIZED          | 未授权                                              |
+| 400      | BAD REQUEST           | 请求的数据格式不符                                   |
+| 401      | UNAUTHORIZED          | 请求的数字签名不匹配                                 |
 | 403      | FORBIDDEN             | 被禁止访问                                          |
 | 404      | NOT FOUND             | 请求的资源不存在                                     |
-| 422      | Unprocesable entity   | [POST/PUT/PATCH] 当创建一个对象时，发生一个验证错误    |
 | 500      | INTERNAL SERVER ERROR | 内部错误                                            |
+| 503      | SERVER_BUSY           | 服务器正忙，请稍后再试                               |
 
 ------
 
@@ -174,7 +174,7 @@ localStorage.clear();
 后端注册成功后需要刷新 redis 缓存的数据
 
 
-### 修改个人页 👌
+### 修改个人页 🔒 👌
 
 - 请求路径：student/user
 - 请求方法：patch
@@ -182,7 +182,6 @@ localStorage.clear();
 
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
-| studentId | 学生 id   | 不能为空 |
 | phone | 手机号     | 不能为空 |
 | gender | 性别     | 不能为空 |
 
@@ -200,7 +199,7 @@ localStorage.clear();
 ```
 
 
-### 发起订单
+### 发起订单 🔒
 
 - 请求路径：student/order
 - 请求方法：post
@@ -208,12 +207,11 @@ localStorage.clear();
 
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
-| studentId | 学生 id   | 不能为空，前端页面的这个报修人的名字不能改，默认就是这个账号用户的名字，所以直接就对应这个他的学号 |
 | faultClass | 报错类型     | 不能为空 |
 | address | 地址     | 不能为空 |
-| contacter | 联系人的名称     | 不能为空，这个随便取都无所谓 |
-| studentPhone | 联系人的电话     | 不能为空 |
-| faultDetails | 说明     | 可以为空 |
+| contacts | 联系人的名称     | 可以为空 |
+| studentPhone | 联系人的电话     | 可以为空 |
+| faultDetails | 说明     | 不能为空 |
 
 - 响应数据
 
@@ -227,18 +225,13 @@ localStorage.clear();
 }
 ```
 
+contacts 和 studentPhone 为空时就默认填入当前账号的信息
 
-### 当前订单
+### 当前订单 🔒
 
 
 - 请求路径：student/order
 - 请求方法：get
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| studentId | 学生 id     | 不能为空，根据当前学生查询对应的订单，如果没有则返回空 |
-
 
 - 响应数据
 
@@ -253,7 +246,7 @@ localStorage.clear();
       "workId": "201825070120",
       "workerName": "张师傅",
       "studentName": "李四",
-      "contacter": "王五",
+      "contacts": "王五",
       "faultDetail": "宿舍的电脑突然上不了网了.....",
       "workerPhone": "13128866666",
       "createTime": "2020-08-09T20:36:26.000Z"
@@ -270,7 +263,7 @@ localStorage.clear();
       "workId": null,
       "workerName": null,
       "studentName": "李四",
-      "contacter": "王五",
+      "contacts": "王五",
       "faultDetail": "宿舍的电脑突然上不了网了.....",
       "workerPhone": "13128866666",
       "createTime": "2020-08-09T20:36:26.000Z"
@@ -278,7 +271,9 @@ localStorage.clear();
 }
 ```
 
-### 处理结果评价
+后端读取 Token 来获取学号
+
+### 处理结果评价 🔒
 
 
 - 请求路径：student/order-end
@@ -288,7 +283,6 @@ localStorage.clear();
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
 | fixTableId | 订单 id     | 不能为空，根据订单的 id 来查询 |
-| studentId | 学号     | 不能为空，判断当前订单是否是这个学生评价的|
 | massage | 学生留言     | 不能为空|
 | grade | 学生打分     | 不能为空|
 
@@ -304,18 +298,12 @@ localStorage.clear();
 }
 ```
 
+后端通过读取 Token 里的学号 来判断当前订单是否是这个学生评价的
 
-### 历史订单
+### 历史订单 🔒
 
 - 请求路径：student/order-list
 - 请求方法：get
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| studentId | 学生 id     | 不能为空，根据当前学生查询对应的订单，如果没有则返回空 |
-
-
 - 响应数据
 
 ```json
@@ -338,9 +326,11 @@ localStorage.clear();
     ]
 }
 ```
+根据当前学生查询对应的订单，如果没有则返回空（后端读取 Token 获取 学生 id 来查）
+
 注意这个订单 id，后面点进每个历史订单查询数据就是通过这个 id 来查的
 
-### 历史订单详情
+### 历史订单详情 🔒
 
 - 请求路径：student/order-pass
 - 请求方法：get
@@ -364,7 +354,7 @@ localStorage.clear();
         "workId": "201825070120",
         "worker_name": "张师傅",
         "student_name": "李四",
-        "contacter": "王五",
+        "contacts": "王五",
         "fault_detail": "宿舍的电脑突然上不了网了.....",
         "worker_phone": "13128866666",
         "create_time": "2020-08-09T20:36:26.000Z",
@@ -410,15 +400,10 @@ localStorage.clear();
 
 前端拿到数据之后存在 sessionStorage，以后之前读取这里面的东西就好了
 
-### 工人主页
+### 工人主页 🔒
 
 - 请求路径：worker/home
 - 请求方法：get
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| workId | 工号   | 不能为空 |
 
 - 响应数据
 
@@ -433,17 +418,14 @@ localStorage.clear();
 }
 ```
 
+后端读取 Token 获取 id 来查
 
-### 当前订单
+
+### 当前订单 🔒
 
 
 - 请求路径：worker/order
 - 请求方法：get
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| workId | 工号     | 不能为空，根据当前工人查询对应的订单，如果没有则返回空 |
 
 
 - 响应数据
@@ -459,7 +441,7 @@ localStorage.clear();
         "workId": "201825070120",
         "workerName": "张师傅",
         "studentName": "李四",
-        "contacter": "王五",
+        "contacts": "王五",
         "faultDetail": "宿舍的电脑突然上不了网了.....",
         "workerPhone": "13128866666",
         "createTime": "2020-08-09T20:36:26.000Z"
@@ -467,16 +449,12 @@ localStorage.clear();
 }
 ```
 
+后端读取 Token 获取 id 来查
 
-### 历史订单
+### 历史订单 🔒
 
 - 请求路径：worker/order-list
 - 请求方法：get
-- 请求参数
-
-| 参数名   | 参数说明 | 备注     |
-| -------- | -------- | -------- |
-| workId | 工号     | 不能为空，根据当前工人查询对应的订单，如果没有则返回空 |
 
 
 - 响应数据
@@ -501,10 +479,12 @@ localStorage.clear();
     ]
 }
 ```
+后端读取 Token 获取 id 来查
+
 注意这个订单 id，后面点进每个历史订单查询数据就是通过这个 id 来查的
 
 
-### 历史订单详情
+### 历史订单详情 🔒
 
 - 请求路径：worker/order-pass
 - 请求方法：get
@@ -528,7 +508,7 @@ localStorage.clear();
         "workId": "201825070120",
         "workerName": "张师傅",
         "studentName": "李四",
-        "contacter": "王五",
+        "contacts": "王五",
         "faultDetail": "宿舍的电脑突然上不了网了.....",
         "workerPhone": "13128866666",
         "createTime": "2020-08-09T20:36:26.000Z",
@@ -538,7 +518,7 @@ localStorage.clear();
 }
 ```
 
-### 处理结果
+### 处理结果 🔒
 
 
 - 请求路径：worker/order-end
@@ -548,7 +528,6 @@ localStorage.clear();
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
 | fixTableId | 订单 id     | 不能为空，根据订单的 id 来查询 |
-| workId | 工号     | 不能为空，判断当前订单是否是这个师傅来处理的|
 | resultDetails | 处理结果     | 不能为空|
 
 - 响应数据
@@ -564,9 +543,9 @@ localStorage.clear();
     }
 }
 ```
+后端读取 Token 获取 id 来查
 
-
-### 消息中心
+### 消息中心 🔒
 
 - 请求路径：worker/massage-list
 - 请求方法：get
@@ -640,7 +619,7 @@ localStorage.clear();
 ```
 
 
-### 获取订单 List 👌
+### 获取订单 List 🔒 👌
 
 - 请求路径：admin/order-list
 - 请求方法：get
@@ -709,7 +688,7 @@ localStorage.clear();
 ```
 注意这个订单 id，后面点进每个历史订单查询数据就是通过这个 id 来查的
 
-### 订单详情 👌
+### 订单详情 🔒 👌
 
 - 请求路径：admin/order
 - 请求方法：get
@@ -797,7 +776,7 @@ localStorage.clear();
 }        
 ```
 
-### 取消订单
+### 取消订单 🔒
 
 - 请求路径：admin/order
 - 请求方法：delete
@@ -826,7 +805,7 @@ localStorage.clear();
 
 
 
-### 获取空闲工人列表
+### 获取空闲工人列表 🔒
 
 - 请求路径：admin/select-worker
 - 请求方法：get
@@ -858,7 +837,7 @@ localStorage.clear();
 }
 ```
 
-### 选择工人
+### 选择工人 🔒
 
 - 请求路径：admin/select-worker
 - 请求方法：get
@@ -884,7 +863,7 @@ localStorage.clear();
 ```
 
 
-### 个人中心
+### 个人中心 🔒
 
 - 请求路径：admin/user
 - 请求方法：patch
@@ -892,7 +871,6 @@ localStorage.clear();
 
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
-| workId | 工号     | 非空 |
 | phone | 手机号     | 不能为空 |
 | gender | 性别     | 不能为空 |
 
@@ -908,7 +886,10 @@ localStorage.clear();
     }
 }
 ```
-### 获取耗材
+
+后端读取 Token 获取 id 来查
+
+### 获取耗材 🔒
 - 请求路径：admin/tool-list
 - 请求方法：get
 
@@ -939,7 +920,7 @@ localStorage.clear();
 ```
 
 
-### 耗材管理
+### 耗材管理 🔒
 - 请求路径：admin/tool
 - 请求方法：patch
 - 请求参数
@@ -962,7 +943,7 @@ localStorage.clear();
 }
 ```
 
-### 新建耗材
+### 新建耗材 🔒
 - 请求路径：admin/tool
 - 请求方法：post
 - 请求参数
@@ -986,7 +967,7 @@ localStorage.clear();
 }
 ```
 
-### 删除耗材
+### 删除耗材 🔒
 - 请求路径：admin/tool
 - 请求方法：delete
 - 请求参数
@@ -1009,7 +990,7 @@ localStorage.clear();
 }
 ```
 
-### 学生列表
+### 学生列表 🔒
 - 请求路径：admin/student-list
 - 请求方法：get
 
@@ -1045,7 +1026,7 @@ localStorage.clear();
 
 
 
-### 职工列表
+### 职工列表 🔒
 
 - 请求路径：admin/worker-list
 - 请求方法：get
@@ -1085,7 +1066,7 @@ localStorage.clear();
 
 ```
 
-### 录入维修工
+### 录入维修工 🔒
 
 - 请求路径：admin/sign-up-w
 - 请求方法：post
@@ -1093,7 +1074,6 @@ localStorage.clear();
 
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
-| workId | 工号   | 不能为空 |
 | password | 密码     | 不能为空 |
 | phone | 手机号     | 不能为空 |
 | gender | 性别     | 不能为空 |
@@ -1111,8 +1091,9 @@ localStorage.clear();
 }
 ```
 
+后端读取 Token 获取 id 再插入，“处理管理员” 这个字段
 
-### 工人详情页
+### 工人详情页 🔒
 
 - 请求路径：admin/worker
 - 请求方法：get
@@ -1165,7 +1146,7 @@ localStorage.clear();
 ```
 
 
-### 统计页
+### 统计页 🔒
 
 - 请求路径：admin/statistics
 - 请求方法：get
@@ -1205,7 +1186,7 @@ localStorage.clear();
 }
 ```
 
-### 消息中心
+### 消息中心 🔒
 
 - 请求路径：admin/massage-list
 - 请求方法：get
@@ -1233,7 +1214,7 @@ localStorage.clear();
 }
 ```
 
-### 发布消息
+### 发布消息 🔒
 - 请求路径：admin/massage
 - 请求方法：post
 - 请求参数
@@ -1254,4 +1235,4 @@ localStorage.clear();
     }
 }
 ```
-
+后端读取 Token 获取 id 再插入，“处理管理员” 这个字段

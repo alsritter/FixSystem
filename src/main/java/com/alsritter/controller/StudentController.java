@@ -2,20 +2,27 @@ package com.alsritter.controller;
 
 import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.annotation.AuthImageCode;
+import com.alsritter.annotation.AuthToken;
+import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.Student;
+import com.alsritter.services.OrdersService;
 import com.alsritter.services.StudentService;
 import com.alsritter.services.UserService;
-import com.alsritter.utils.ConstantKit;
-import com.alsritter.utils.Md5TokenGenerator;
+import com.alsritter.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.naming.NoPermissionException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -35,6 +42,12 @@ public class StudentController {
     private Md5TokenGenerator tokenGenerator;
     private StudentService studentService;
     private UserService userService;
+    private OrdersService ordersService;
+
+    @Autowired
+    public void setOrdersService(OrdersService ordersService) {
+        this.ordersService = ordersService;
+    }
 
     @Autowired
     public void setUserService(UserService userService) {
@@ -61,16 +74,13 @@ public class StudentController {
             String codevalue,
             String uuid,
             String studentId,
-            String password) {
-
-        // 先创建对象，下面分别赋值
-        JSONObject result = new JSONObject();
-        int code = 500;
-        String massage = "";
+            String password
+    ) {
 
         // 先查询数据
         Student user = studentService.loginStudent(studentId, password);
-
+// 先创建对象，下面分别赋值
+        JSONObject result = new JSONObject();
         if (user != null) {
 
             ValueOperations<String, String> valueOperations = stringTemplate.opsForValue();
@@ -99,25 +109,27 @@ public class StudentController {
             valueOperations.set(token + studentId, Long.toString(System.currentTimeMillis()));
             stringTemplate.expire(token + studentId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
 
-            code = HttpServletResponse.SC_OK;
-            massage = "登陆成功";
+
             result.put("status", "登录成功");
             result.put("studentId", user.getStudentId());
             result.put("name", user.getName());
             result.put("gender", user.getGender());
             result.put("phone", user.getPhone());
             result.put("token", token);
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(HttpServletResponse.SC_OK)
+                    .message("登陆成功")
+                    .data(result)
+                    .build();
         } else {
-            code = HttpServletResponse.SC_NOT_FOUND;
-            massage = "登陆失败";
-            result.put("status", "登录失败");
+            result.put("status", "当前学生不存在");
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(404)
+                    .message("当前学生不存在")
+                    .data(result)
+                    .build();
         }
 
-        return ResponseTemplate.<JSONObject>builder()
-                .code(code)
-                .message(massage)
-                .data(result)
-                .build();
     }
 
 
@@ -138,44 +150,24 @@ public class StudentController {
             String name,
             String password,
             String phone,
-            String gender) {
-
-        // 先创建对象，下面分别赋值
-        JSONObject result = new JSONObject();
+            String gender
+    ) {
 
         //验证学号是否正确(只能是数字和 "-")
         if (!Pattern.compile("^-?\\d+(\\.\\d+)?$").matcher(studentId).matches()) {
-            result.put("status", "学号格式错误");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(422)
-                    .message("学号格式错误")
-                    .data(result)
-                    .build();
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "学号格式错误");
         }
 
         //检验是否已经有这个学生了
         if (userService.isExistRedis(studentId)) {
-            result.put("status", "学生已经存在");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(422)
-                    .message("学生已经存在")
-                    .data(result)
-                    .build();
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "学生已经存在");
         }
 
 
         //验证手机号码正确性
         String regex = "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$";
         if (!Pattern.compile(regex).matcher(phone).matches()) {
-            result.put("status", "手机号错误");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(422)
-                    .message("手机号错误")
-                    .data(result)
-                    .build();
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "手机号错误");
         }
 
         int i = 0;
@@ -188,12 +180,7 @@ public class StudentController {
         }
 
         if (i == 0) {
-            result.put("status", "创建错误");
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(500)
-                    .message("创建错误")
-                    .data(result)
-                    .build();
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }
 
         // 如果成功插入则直接调用上面的登陆方法
@@ -202,21 +189,21 @@ public class StudentController {
 
     @PatchMapping("/user")
     @AllParamNotNull
-    public ResponseTemplate<JSONObject> updateStudent(String studentId, String name, String phone) {
-        int i = studentService.updateStudent(studentId, name, phone);
+    @AuthToken
+    public ResponseTemplate<JSONObject> updateStudent(HttpServletRequest request, String name, String phone) {
+        // 直接通过 Token 来取得数据
+        String id = (String) request.getAttribute(ConstantKit.REQUEST_CURRENT_KEY);
+        if (id == null){
+            throw new NullPointerException("Token 取不到用户 id");
+        }
+
+        int i = studentService.updateStudent(id, name, phone);
         JSONObject result = new JSONObject();
 
         if (i == 0) {
-            result.put("status", "创建错误");
-
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(500)
-                    .message("创建错误")
-                    .data(result)
-                    .build();
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         } else {
             result.put("status", "修改成功");
-
             return ResponseTemplate.<JSONObject>builder()
                     .code(200)
                     .message("修改成功")
@@ -226,5 +213,58 @@ public class StudentController {
     }
 
 
+    @PostMapping("/order")
+    @ParamNotNull(params = {"studentId", "faultClass", "address", "contacts"})
+    @AuthToken
+    public ResponseTemplate<JSONObject> createOrder(
+            HttpServletRequest request,
+            String faultClass,
+            String address,
+            String contacts,
+            String studentPhone,
+            String faultDetails
+    ) {
+        // 直接通过 Token 来取得数据
+        String id = (String) request.getAttribute(ConstantKit.REQUEST_CURRENT_KEY);
+        if (id == null){
+            throw new NullPointerException("Token 取不到用户 id");
+        }
+
+        // 先检查 contacts 和 studentPhone 参数是否为空，如果为空则查找当前用户的账号密码给他
+        Student student = studentService.getStudent(id);
+        JSONObject result = new JSONObject();
+
+        if (contacts == null) {
+            contacts = student.getName();
+        }
+
+        if (studentPhone == null) {
+            studentPhone = student.getPhone();
+        }
+
+        int i = 0;
+        try {
+            i = ordersService.createOrder(
+                    (String) request.getAttribute(ConstantKit.REQUEST_CURRENT_KEY),
+                    faultClass,
+                    address,
+                    contacts,
+                    studentPhone,
+                    faultDetails);
+        } catch (MyDBError error) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR, error);
+        }
+
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        } else {
+            result.put("status", "订单发起成功");
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(CommonEnum.CREATED.getResultCode())
+                    .message(CommonEnum.CREATED.getResultMsg())
+                    .data(result)
+                    .build();
+        }
+    }
 
 }
