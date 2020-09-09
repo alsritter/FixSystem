@@ -6,7 +6,7 @@ import com.alsritter.annotation.AuthToken;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.Admin;
 import com.alsritter.pojo.Orders;
-import com.alsritter.services.LoginService;
+import com.alsritter.services.AdminService;
 import com.alsritter.services.OrdersService;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
@@ -33,11 +33,11 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/admin")
 public class AdminController {
 
-    private LoginService loginService;
+    private AdminService adminService;
 
     @Autowired
-    public void setLoginService(LoginService loginService) {
-        this.loginService = loginService;
+    public void setAdminService(AdminService adminService) {
+        this.adminService = adminService;
     }
 
     private Md5TokenGenerator tokenGenerator;
@@ -67,7 +67,7 @@ public class AdminController {
             String workId,
             String password) {
         // 先查询数据
-        Admin user = loginService.adminLogin(workId, password);
+        Admin user = adminService.adminLogin(workId, password);
         JSONObject result = new JSONObject();
 
         if (user != null) {
@@ -154,7 +154,7 @@ public class AdminController {
     @GetMapping("/order")
     @AuthToken
     public ResponseTemplate<Orders> getOrder(@RequestParam long fixTableId){
-        Orders orders = ordersService.getOrders(fixTableId);
+        Orders orders = ordersService.getOrder(fixTableId);
 
         if (orders == null) {
             throw new BizException(CommonEnum.NOT_FOUND);

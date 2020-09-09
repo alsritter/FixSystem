@@ -16,7 +16,7 @@ import javax.annotation.Resource;
  **/
 @Slf4j
 @Service
-public class LoginService {
+public class AdminService {
 
     @Resource
     public AdminMapper adminMapper;

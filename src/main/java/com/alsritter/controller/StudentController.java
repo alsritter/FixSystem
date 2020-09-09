@@ -5,6 +5,7 @@ import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
 import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
+import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Student;
 import com.alsritter.services.OrdersService;
 import com.alsritter.services.StudentService;
@@ -15,15 +16,12 @@ import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.naming.NoPermissionException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -191,13 +189,8 @@ public class StudentController {
     @AllParamNotNull
     @AuthToken
     public ResponseTemplate<JSONObject> updateStudent(HttpServletRequest request, String name, String phone) {
-        // 直接通过 Token 来取得数据
-        String id = (String) request.getAttribute(ConstantKit.REQUEST_CURRENT_KEY);
-        if (id == null){
-            throw new NullPointerException("Token 取不到用户 id");
-        }
 
-        int i = studentService.updateStudent(id, name, phone);
+        int i = studentService.updateStudent(userService.getId(request), name, phone);
         JSONObject result = new JSONObject();
 
         if (i == 0) {
@@ -214,7 +207,7 @@ public class StudentController {
 
 
     @PostMapping("/order")
-    @ParamNotNull(params = {"studentId", "faultClass", "address", "contacts"})
+    @ParamNotNull(params = {"faultClass", "address"})
     @AuthToken
     public ResponseTemplate<JSONObject> createOrder(
             HttpServletRequest request,
@@ -224,14 +217,9 @@ public class StudentController {
             String studentPhone,
             String faultDetails
     ) {
-        // 直接通过 Token 来取得数据
-        String id = (String) request.getAttribute(ConstantKit.REQUEST_CURRENT_KEY);
-        if (id == null){
-            throw new NullPointerException("Token 取不到用户 id");
-        }
 
         // 先检查 contacts 和 studentPhone 参数是否为空，如果为空则查找当前用户的账号密码给他
-        Student student = studentService.getStudent(id);
+        Student student = studentService.getStudent(userService.getId(request));
         JSONObject result = new JSONObject();
 
         if (contacts == null) {
@@ -267,4 +255,62 @@ public class StudentController {
         }
     }
 
+
+    @GetMapping("/order")
+    @AuthToken
+    public ResponseTemplate<List<Orders>> getOrder(HttpServletRequest request){
+        // 直接通过 Token 来取得数据
+        String id = (String) request.getAttribute(ConstantKit.REQUEST_CURRENT_KEY);
+        if (id == null){
+            throw new NullPointerException(CommonEnum.UNAUTHORIZED.getResultMsg());
+        }
+
+        List<Orders> ordersOfUser = ordersService.getOrdersOfStudent(id);
+
+        if (ordersOfUser == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+
+        return ResponseTemplate
+                .<List<Orders>>builder()
+                .code(HttpServletResponse.SC_OK)
+                .message("订单详情")
+                .data(ordersOfUser)
+                .build();
+    }
+
+    @PatchMapping("/order-end")
+    @AuthToken
+    @ParamNotNull(params = {"fixTableId"})
+    public ResponseTemplate<JSONObject> endOrder(HttpServletRequest request, long fixTableId, String massage, Integer grade) {
+        // 先检查是否是当前工人处理的订单 和 判断当前订单是否是正在处理的 2（如果不行会自动抛出错误）
+        ordersService.isExistStudent(userService.getId(request), fixTableId);
+
+        // resultDetails 可以为空
+        if (massage == null) {
+            massage = "";
+        }
+
+        if (grade == null) {
+            grade = 10;
+        }
+
+        if (grade > 10 || grade < 0) {
+            grade = 10;
+        }
+
+        int i = ordersService.endOrder(fixTableId, massage, grade);
+        JSONObject result = new JSONObject();
+
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        } else {
+            result.put("status", CommonEnum.SUCCESS);
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(200)
+                    .message("处理结果评价成功")
+                    .data(result)
+                    .build();
+        }
+    }
 }

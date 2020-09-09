@@ -1,11 +1,13 @@
 package com.alsritter.services;
 
+import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Set;
 
 /**
@@ -30,5 +32,15 @@ public class UserService {
             }
         }
         return false;
+    }
+
+    public String getId(HttpServletRequest request){
+        // 直接通过 Token 来取得数据
+        String id = (String) request.getAttribute(ConstantKit.REQUEST_CURRENT_KEY);
+        if (id == null){
+            throw new NullPointerException(CommonEnum.UNAUTHORIZED.getResultMsg());
+        }
+
+        return id;
     }
 }

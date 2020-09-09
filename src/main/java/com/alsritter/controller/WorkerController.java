@@ -1,8 +1,13 @@
 package com.alsritter.controller;
 
 import com.alsritter.annotation.AuthImageCode;
+import com.alsritter.annotation.AuthToken;
+import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
+import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Worker;
+import com.alsritter.services.OrdersService;
+import com.alsritter.services.UserService;
 import com.alsritter.services.WorkerService;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
@@ -13,12 +18,12 @@ import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -31,6 +36,18 @@ public class WorkerController {
     StringRedisTemplate stringTemplate;
     private WorkerService workerService;
     private Md5TokenGenerator tokenGenerator;
+    private OrdersService ordersService;
+    private UserService userService;
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setOrdersService(OrdersService ordersService) {
+        this.ordersService = ordersService;
+    }
 
 
     @Autowired
@@ -105,6 +122,51 @@ public class WorkerController {
             return ResponseTemplate.<JSONObject>builder()
                     .code(404)
                     .message("当前工人不存在")
+                    .data(result)
+                    .build();
+        }
+    }
+
+
+    @GetMapping("/order")
+    @AuthToken
+    public ResponseTemplate<List<Orders>> getOrder(HttpServletRequest request) {
+        List<Orders> ordersOfUser = ordersService.getOrdersOfWorker(userService.getId(request));
+
+        if (ordersOfUser == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+
+        return ResponseTemplate
+                .<List<Orders>>builder()
+                .code(HttpServletResponse.SC_OK)
+                .message("订单详情")
+                .data(ordersOfUser)
+                .build();
+    }
+
+    @PatchMapping("/order-end")
+    @AuthToken
+    @ParamNotNull(params = {"fixTableId"})
+    public ResponseTemplate<JSONObject> endOrder(HttpServletRequest request, long fixTableId, String resultDetails) {
+        // 先检查是否是当前工人处理的订单 和 判断当前订单是否是正在处理的 1（如果不行会自动抛出错误）
+        ordersService.isExist(userService.getId(request), fixTableId);
+
+        // resultDetails 可以为空
+        if (resultDetails == null) {
+            resultDetails = "";
+        }
+
+        int i = ordersService.endOrder(fixTableId, resultDetails);
+        JSONObject result = new JSONObject();
+
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        } else {
+            result.put("status", CommonEnum.SUCCESS);
+            return ResponseTemplate.<JSONObject>builder()
+                    .code(200)
+                    .message("处理结果评价成功")
                     .data(result)
                     .build();
         }

@@ -13,17 +13,8 @@ public class WorkerService {
     @Resource
     public WorkerMapper WorkerMapper;
 
-
     public Worker loginWorker(String workId, String password) {
         return WorkerMapper.loginWorker(workId, password);
-    }
-
-    // public Worker getWorker(String WorkId) {
-    //     return WorkerMapper.getWorker(WorkId);
-    // }
-
-    public int updateWorker(String workId, String name, String phone) {
-        return WorkerMapper.updateWorker(workId, name, phone);
     }
 
 }

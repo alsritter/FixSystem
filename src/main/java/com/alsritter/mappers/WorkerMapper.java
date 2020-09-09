@@ -18,15 +18,10 @@ public interface WorkerMapper {
     @Select("select * from WORKER_TB WHERE WORK_ID=#{workId} and PASSWORD=#{password}")
     Worker loginWorker(String workId,String password);
 
-    // //工人主页
-    // @Result(column = "WORK_ID",property = "workId")
-    // @Select("select * from WORK_TB WHERE WORK_ID=#{workId} and ORDERS_NUMBER=#{ordersNumber}")
-    // Worker getWorker(String workId);
-
     @Update("update  WORK_TB set NAME=#{name}, PHONE=#{phone} WHERE WORK_ID=#{workId}")
     int updateWorker(String workId,String name,String phone);
 
-    // 用来把管理员 id 更新到 redis
+    // 用来把工人 id 更新到 redis
     @Select("select work_id from WORKER_TB")
     List<String> getWorkerIdList();
 }
