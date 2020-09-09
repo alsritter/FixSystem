@@ -23,7 +23,7 @@ public interface OrderMapper {
 
     // 可以使用 @ResultMap 注解来复用上面的映射
     @ResultMap("order")
-    @Select("select * from ORDERS_TB where student_id = #{id} and state in (0,1);")
+    @Select("select * from ORDERS_TB where student_id = #{id} and (state in (0,1) or (state = 2 and massage is null))")
     List<Orders> getOrdersOfStudent(String id);
 
     @ResultMap("order")
@@ -53,5 +53,11 @@ public interface OrderMapper {
     int endOrder(long fixTableId, String resultDetails);
 
     @Update("update ORDERS_TB set massage=#{massage}, grade=#{grade} where fix_table_id=#{fixTableId}")
-    int endOrderStudent(long fixTableId, String massage, Integer grade);
+    int endOrderStudent(long fixTableId, String massage, double grade);
+
+    @Delete("delete from ORDERS_TB where fix_table_id = #{fixTableId}")
+    int deleteOrder(long fixTableId);
+
+    @Update("update ORDERS_TB set work_id=#{workId} fix_table_id=#{fixTableId}")
+    int setOrderWorker(String workId, long fixTableId);
 }

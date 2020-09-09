@@ -19,4 +19,5 @@ public class Worker {
   private String details;
   private long ordersNumber;
   private double avgGrade;
+  private int state;
 }

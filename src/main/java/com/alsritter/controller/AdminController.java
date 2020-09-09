@@ -6,8 +6,11 @@ import com.alsritter.annotation.AuthToken;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.Admin;
 import com.alsritter.pojo.Orders;
+import com.alsritter.pojo.Worker;
 import com.alsritter.services.AdminService;
 import com.alsritter.services.OrdersService;
+import com.alsritter.services.UserService;
+import com.alsritter.services.WorkerService;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
@@ -23,6 +26,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * @author alsritter
@@ -34,13 +38,25 @@ import java.util.concurrent.TimeUnit;
 public class AdminController {
 
     private AdminService adminService;
+    private Md5TokenGenerator tokenGenerator;
+    private OrdersService ordersService;
+    private WorkerService workerService;
+    private UserService userService;
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setWorkerService(WorkerService workerService) {
+        this.workerService = workerService;
+    }
 
     @Autowired
     public void setAdminService(AdminService adminService) {
         this.adminService = adminService;
     }
-
-    private Md5TokenGenerator tokenGenerator;
 
     @Autowired
     public void setTokenGenerator(Md5TokenGenerator tokenGenerator) {
@@ -50,7 +66,6 @@ public class AdminController {
     @Resource
     StringRedisTemplate stringTemplate;
 
-    private OrdersService ordersService;
 
     @Autowired
     public void setOrdersService(OrdersService ordersService) {
@@ -153,7 +168,7 @@ public class AdminController {
 
     @GetMapping("/order")
     @AuthToken
-    public ResponseTemplate<Orders> getOrder(@RequestParam long fixTableId){
+    public ResponseTemplate<Orders> getOrder(@RequestParam long fixTableId) {
         Orders orders = ordersService.getOrder(fixTableId);
 
         if (orders == null) {
@@ -169,62 +184,53 @@ public class AdminController {
     }
 
 
-    @DeleteMapping(value = "/order", produces = "application/json;charset=utf-8")
+    @DeleteMapping("/order")
     @AuthToken
-    public String deleteOrder(long fixTableId){
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 204,\n" +
-                "    \"message\": \"取消订单成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"取消订单成功\"\n" +
-                "    }\n" +
-                "}";
+    public ResponseTemplate<JSONObject> deleteOrder(long fixTableId) {
+        if (ordersService.deleteOrder(fixTableId) == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("status", CommonEnum.DELETED);
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.DELETED.getResultCode())
+                .message("取消订单成功")
+                .data(result)
+                .build();
     }
 
-    @GetMapping(value = "/select-worker", produces = "application/json;charset=utf-8")
+    @GetMapping("/select-worker")
     @AuthToken
-    public String getLeisureWorkerList(){
-        // TODO: 等待实现
-        return "{\n" +
-                "  \"code\": 200,\n" +
-                "  \"message\": \"获取空闲工人列表\",\n" +
-                "  \"data\": [\n" +
-                "    {\n" +
-                "      \"workId\": \"201825070120\",\n" +
-                "      \"workerName\": \"张师傅\",\n" +
-                "      \"grade\": 2.2\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"workId\": \"201825070120\",\n" +
-                "      \"workerName\": \"李师傅\",\n" +
-                "      \"grade\": 3.1\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"workId\": \"201825070120\",\n" +
-                "      \"workerName\": \"梁师傅\",\n" +
-                "      \"grade\": 4.2\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+    public ResponseTemplate<List<Worker>> getLeisureWorkerList() {
+        List<Worker> leisureWorkerList = workerService.getLeisureWorkerList();
+        return ResponseTemplate.<List<Worker>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取空闲工人列表")
+                .data(leisureWorkerList)
+                .build();
     }
 
-    @PatchMapping(value = "/select-worker" , produces = "application/json;charset=utf-8")
+    @PatchMapping("/select-worker")
     @AuthToken
-    public String selectLeisureWorker(String workId){
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 200,\n" +
-                "    \"message\": \"选择成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"选择成功\"\n" +
-                "    }\n" +
-                "}";
+    public ResponseTemplate<JSONObject> selectLeisureWorker(String workId, long fixTableId) {
+        int i = workerService.selectLeisureWorker(workId, fixTableId);
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("status", CommonEnum.SUCCESS);
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("指定工人成功")
+                .data(result)
+                .build();
     }
 
-    @PatchMapping(value = "/user" , produces = "application/json;charset=utf-8")
+    @PatchMapping(value = "/user", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String updateUser(String workId, String phone, String gender){
+    public String updateUser(String workId, String phone, String gender) {
         // TODO: 等待实现
         return "{\n" +
                 "    \"code\": 200,\n" +
@@ -237,7 +243,7 @@ public class AdminController {
 
     @GetMapping(value = "/tool-list", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String getToolList(){
+    public String getToolList() {
         // TODO: 等待实现
         return "{\n" +
                 "   \"code\": 200,\n" +
@@ -262,9 +268,9 @@ public class AdminController {
                 "}";
     }
 
-    @PatchMapping(value = "/tool" , produces = "application/json;charset=utf-8")
+    @PatchMapping(value = "/tool", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String updateTool(long toolId, long toolCount){
+    public String updateTool(long toolId, long toolCount) {
         // TODO: 等待实现
         return "{\n" +
                 "    \"code\": 200,\n" +
@@ -275,9 +281,9 @@ public class AdminController {
                 "}";
     }
 
-    @PostMapping(value = "/tool" , produces = "application/json;charset=utf-8")
+    @PostMapping(value = "/tool", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String createTool(String toolName, long toolCount){
+    public String createTool(String toolName, long toolCount) {
         // TODO: 等待实现
         return "{\n" +
                 "    \"code\": 201,\n" +
@@ -288,9 +294,9 @@ public class AdminController {
                 "}";
     }
 
-    @DeleteMapping(value = "/tool" , produces = "application/json;charset=utf-8")
+    @DeleteMapping(value = "/tool", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String deleteTool(long toolId){
+    public String deleteTool(long toolId) {
         // TODO: 等待实现
         return "{\n" +
                 "    \"code\": 204,\n" +
@@ -303,7 +309,7 @@ public class AdminController {
 
     @GetMapping(value = "/student-list", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String getStudentList(){
+    public String getStudentList() {
         // TODO: 等待实现
         return "{\n" +
                 "  \"code\": 200,\n" +
@@ -331,22 +337,9 @@ public class AdminController {
                 "}";
     }
 
-    @DeleteMapping(value = "/student" , produces = "application/json;charset=utf-8")
-    @AuthToken
-    public String deleteStudent(String studentId){
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 204,\n" +
-                "    \"message\": \"删除成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"删除成功\"\n" +
-                "    }\n" +
-                "}";
-    }
-
     @GetMapping(value = "/worker-list", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String getWorkerList(){
+    public String getWorkerList() {
         // TODO: 等待实现
         return "{\n" +
                 "    \"code\": 200,\n" +
@@ -378,35 +371,59 @@ public class AdminController {
                 "}";
     }
 
-    @PostMapping(value = "/sign-up-w" , produces = "application/json;charset=utf-8")
+    @PostMapping("/sign-up-w")
     @AuthToken
-    public String signUpWorker(String workId, String password, String phone, String gender, String details){
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 201,\n" +
-                "    \"message\": \"注册成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"注册成功\"\n" +
-                "    }\n" +
-                "}";
+    public ResponseTemplate<JSONObject> signUpWorker(
+            String workId,
+            String name,
+            String password,
+            String phone,
+            String gender,
+            String details
+    ) {
+        //验证工号格式是否正确(只能是数字和 "-")
+        if (!Pattern.compile("^-?\\d+(\\.\\d+)?$").matcher(workId).matches()) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "工号格式错误");
+        }
+
+        //检验是否已经有这个工人
+        if (userService.isExistRedis(workId)) {
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "工人已经存在");
+        }
+
+
+        //验证手机号码正确性
+        String regex = "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$";
+        if (!Pattern.compile(regex).matcher(phone).matches()) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "手机号错误");
+        }
+
+        int i = 0;
+
+        try {
+            // 在 Controller 里处理错误，而非在 Service
+            i = workerService.signUpStudent(workId, name, password, phone, gender, details);
+        } catch (RuntimeException e) {
+            log.warn(e.getMessage());
+        }
+
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("status", CommonEnum.CREATED);
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.CREATED.getResultCode())
+                .message("录入工人成功")
+                .data(result)
+                .build();
     }
 
-    @DeleteMapping(value = "/worker" , produces = "application/json;charset=utf-8")
-    @AuthToken
-    public String deleteWorker(String workId){
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 204,\n" +
-                "    \"message\": \"删除成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"删除成功\"\n" +
-                "    }\n" +
-                "}";
-    }
 
     @GetMapping(value = "/worker", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String getWorker(String workId){
+    public String getWorker(String workId) {
         // TODO: 等待实现
         return "{\n" +
                 " \"code\": 200,\n" +
@@ -446,7 +463,7 @@ public class AdminController {
 
     @GetMapping(value = "/statistics", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String getStatistics(){
+    public String getStatistics() {
         // TODO: 等待实现
         return "{\n" +
                 "    \"code\": 200,\n" +
@@ -476,7 +493,7 @@ public class AdminController {
 
     @GetMapping(value = "/massage-list", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String getMassageList(){
+    public String getMassageList() {
         // TODO: 等待实现
         return "{\n" +
                 "    \"code\": 200,\n" +
@@ -498,9 +515,9 @@ public class AdminController {
                 "}";
     }
 
-    @PostMapping(value = "/massage" , produces = "application/json;charset=utf-8")
+    @PostMapping(value = "/massage", produces = "application/json;charset=utf-8")
     @AuthToken
-    public String pushMassage(String workId, String massage){
+    public String pushMassage(String workId, String massage) {
         // TODO: 等待实现
         return "{\n" +
                 "    \"code\": 201,\n" +

@@ -2,9 +2,11 @@ package com.alsritter.services;
 
 import com.alsritter.mappers.OrderMapper;
 import com.alsritter.pojo.Orders;
+import com.alsritter.pojo.Worker;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.MyDBError;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,14 +24,47 @@ public class OrdersService {
 
     @Resource
     public OrderMapper orderMapper;
+    private WorkerService workerService;
+
+    @Autowired
+    public void setWorkerService(WorkerService workerService) {
+        this.workerService = workerService;
+    }
 
     public List<Orders> getAllOrders() {
         return orderMapper.getAllOrders();
     }
 
-    public Orders getOrder(long fixTableId){
-        return orderMapper.getOrder(fixTableId);
+    public Orders getOrder(long fixTableId) {
+        Orders order = orderMapper.getOrder(fixTableId);
+        if (order == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return order;
     }
+
+    @Transactional
+    public int deleteOrder(long fixTableId) {
+        // 先查询当前要处理的订单是什么情况
+
+        // 为空时抛出异常
+        Orders order = getOrder(fixTableId);
+
+        // 不能是状态为 2 的订单
+        if (order.getState() == 2) {
+            throw new BizException(CommonEnum.FORBIDDEN);
+        }
+
+        // 没有指定工人的订单直接删
+        if (order.getWorkId() != null) {
+            // 否则先更改一下工人的状态为 0（空闲）再删除
+            if (workerService.setState(order.getWorkId(), 0) == 0) {
+                throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR.getResultCode(), "修改工人状态错误");
+            }
+        }
+        return orderMapper.deleteOrder(fixTableId);
+    }
+
 
     /**
      * <b>
@@ -37,10 +72,10 @@ public class OrdersService {
      * </b>
      * <br>
      *
-     * @return : com.alsritter.pojo.Orders
      * @param studentId : 学生的 id
+     * @return : com.alsritter.pojo.Orders
      */
-    public List<Orders> getOrdersOfStudent(String studentId){
+    public List<Orders> getOrdersOfStudent(String studentId) {
         return orderMapper.getOrdersOfStudent(studentId);
     }
 
@@ -50,10 +85,10 @@ public class OrdersService {
      * </b>
      * <br>
      *
-     * @return : com.alsritter.pojo.Orders
      * @param workerId : 工人的 id
+     * @return : com.alsritter.pojo.Orders
      */
-    public List<Orders> getOrdersOfWorker(String workerId){
+    public List<Orders> getOrdersOfWorker(String workerId) {
         return orderMapper.getOrdersOfWorker(workerId);
     }
 
@@ -62,48 +97,48 @@ public class OrdersService {
      * 检查当前订单是否由该工人进行处理的，
      * 如果能用该工人的 id 和该订单号找到
      * 数据表示该订单是由该工人处理
-     *
+     * <p>
      * 同时检查当前订单是否处于正在进行的状态（isOngoing）
      * </b>
      * <br>
      *
-     * @param workerId : 工人的id
+     * @param workerId   : 工人的id
      * @param fixTableId : 单号
      */
-    public void isExist(String workerId,long fixTableId){
+    public void isExist(String workerId, long fixTableId) {
         // 先检查是否是当前工人处理的单
         Orders exist = orderMapper.isExist(workerId, fixTableId);
         if (exist == null) {
-            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(),"不是当前工人的订单");
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "不是当前工人的订单");
         }
 
         // 再判断当前订单是否是正在处理的 1
         if (exist.getState() != 1) {
-            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(),"当前订单未接单或已处理");
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "当前订单未接单或已处理");
         }
     }
 
     /**
      * <b>
      * 和上面的那个作用差不多
-     *
+     * <p>
      * 检查当前订单是否当前学生发起的，
      * 如果能用该学生的 id 和该订单号找到
      * 数据表示该订单是由该工人处理
-     *
+     * <p>
      * 同时检查当前订单是否处于已经是 2 状态，且 Massage 为 null
      * 注意：是 Null 而不是 “空”
      * </b>
      * <br>
      *
-     * @param studentId : 学生的id
+     * @param studentId  : 学生的id
      * @param fixTableId : 单号
      */
-    public void isExistStudent(String studentId, long fixTableId){
+    public Orders isExistStudent(String studentId, long fixTableId) {
         // 先检查是否是当前学生的订单
         Orders exist = orderMapper.isExistStudent(studentId, fixTableId);
         if (exist == null) {
-            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(),"不是当前学生的订单");
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "不是当前学生的订单");
         }
 
         // 再判断当前订单是否是已处理的 2
@@ -115,23 +150,25 @@ public class OrdersService {
         if (exist.getMassage() != null) {
             throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "当前订单已评价");
         }
+
+        return exist;
     }
 
     /**
      * <b>
-     * 这个是给工人评价的
+     * 这个是给工人处理结果说明的
      * </b>
      * <br>
      *
-     * @return : int
-     * @param fixTableId :
+     * @param fixTableId    :
      * @param resultDetails :
+     * @return : int
      */
     @Transactional
-    public int endOrder(long fixTableId, String resultDetails){
+    public int endOrder(long fixTableId, String resultDetails) {
         int i = 0;
         try {
-            i = orderMapper.endOrder(fixTableId,resultDetails);
+            i = orderMapper.endOrder(fixTableId, resultDetails);
         } catch (RuntimeException e) {
             throw new MyDBError("修改数据错误：", e);
         }
@@ -140,20 +177,34 @@ public class OrdersService {
 
     /**
      * <b>
-     * 这个是给学生评价的
+     * 这个是给学生评价的，注意 这个给分需要先算出平均分
      * </b>
      * <br>
      *
-     * @return : int
      * @param fixTableId :
-     * @param massage :
-     * @param grade :
+     * @param massage    :
+     * @param grade      :
+     * @return : int
      */
     @Transactional
-    public int endOrder(long fixTableId, String massage, Integer grade){
+    public int endOrder(String id, long fixTableId, String massage, Integer grade) {
+        // 先检查是否是当前工人处理的订单 和 判断当前订单是否是正在处理的 2（如果不行会自动抛出错误）
+        Orders orders = isExistStudent(id, fixTableId);
+        // 再取得当前订单的工人
+        Worker worker = workerService.getWorker(orders.getWorkId());
+
+        double avgGrade = worker.getAvgGrade();
+        double ordersNumber = worker.getOrdersNumber();
+
+        if (ordersNumber == 0) {
+            ordersNumber = 1;
+        }
+
+        double newAvgGrade = ((avgGrade * ordersNumber) + grade) / (ordersNumber + 1);
+
         int i = 0;
         try {
-            i = orderMapper.endOrderStudent(fixTableId, massage, grade);
+            i = orderMapper.endOrderStudent(fixTableId, massage, newAvgGrade);
         } catch (RuntimeException e) {
             throw new MyDBError("修改数据错误：", e);
         }
@@ -179,6 +230,15 @@ public class OrdersService {
     }
 
 
-
+    @Transactional
+    public int setOrderWorker(String workId, long fixTableId) {
+        int i = 0;
+        try {
+            i = orderMapper.setOrderWorker(workId, fixTableId);
+        } catch (RuntimeException e) {
+            throw new MyDBError("指定订单处理工作人员失败", e);
+        }
+        return i;
+    }
 
 }

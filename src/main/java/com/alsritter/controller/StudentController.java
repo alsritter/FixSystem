@@ -259,13 +259,7 @@ public class StudentController {
     @GetMapping("/order")
     @AuthToken
     public ResponseTemplate<List<Orders>> getOrder(HttpServletRequest request){
-        // 直接通过 Token 来取得数据
-        String id = (String) request.getAttribute(ConstantKit.REQUEST_CURRENT_KEY);
-        if (id == null){
-            throw new NullPointerException(CommonEnum.UNAUTHORIZED.getResultMsg());
-        }
-
-        List<Orders> ordersOfUser = ordersService.getOrdersOfStudent(id);
+        List<Orders> ordersOfUser = ordersService.getOrdersOfStudent(userService.getId(request));
 
         if (ordersOfUser == null) {
             throw new BizException(CommonEnum.NOT_FOUND);
@@ -283,9 +277,6 @@ public class StudentController {
     @AuthToken
     @ParamNotNull(params = {"fixTableId"})
     public ResponseTemplate<JSONObject> endOrder(HttpServletRequest request, long fixTableId, String massage, Integer grade) {
-        // 先检查是否是当前工人处理的订单 和 判断当前订单是否是正在处理的 2（如果不行会自动抛出错误）
-        ordersService.isExistStudent(userService.getId(request), fixTableId);
-
         // resultDetails 可以为空
         if (massage == null) {
             massage = "";
@@ -299,7 +290,7 @@ public class StudentController {
             grade = 10;
         }
 
-        int i = ordersService.endOrder(fixTableId, massage, grade);
+        int i = ordersService.endOrder(userService.getId(request), fixTableId, massage, grade);
         JSONObject result = new JSONObject();
 
         if (i == 0) {
