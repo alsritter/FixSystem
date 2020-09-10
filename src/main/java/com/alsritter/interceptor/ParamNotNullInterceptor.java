@@ -5,16 +5,13 @@ import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.JSONObject;
-import org.springframework.http.MediaType;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import java.util.Map;
+import java.lang.reflect.Parameter;
 
 /**
  * 检查参数非空拦截器
@@ -38,15 +35,18 @@ public class ParamNotNullInterceptor implements HandlerInterceptor {
         // 如果打上了 AllParamNotNull
         if (method.getAnnotation(AllParamNotNull.class) != null ||
                 handlerMethod.getBeanType().getAnnotation(AllParamNotNull.class) != null) {
-            //从httpServletRequest获取注解上指定的参数
-            Map<String, String[]> parameterMap = request.getParameterMap();
-
-            for (String[] value : parameterMap.values()) {
-                if (value == null || value[0].equals("")) {
+            Parameter[] parameters = method.getParameters();
+            for (Parameter parameter : parameters) {
+                String name = parameter.getName();
+                log.debug("参数名为：{}  参数类型为：{}", name, parameter.getType());
+                // 注意：一些非指定的参数需要屏蔽
+                if (request.getParameter(name) == null &&
+                        parameter.getType() != HttpServletResponse.class &&
+                        parameter.getType() != HttpServletRequest.class
+                ) {
                     throw new BizException(CommonEnum.BAD_REQUEST);
                 }
             }
-
             return true;
         }
 
