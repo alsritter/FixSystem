@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -258,7 +259,7 @@ public class StudentController {
 
     @GetMapping("/order")
     @AuthToken
-    public ResponseTemplate<List<Orders>> getOrder(HttpServletRequest request){
+    public ResponseTemplate<List<Orders>> getOrder(HttpServletRequest request) {
         List<Orders> ordersOfUser = ordersService.getOrdersOfStudent(userService.getId(request));
 
         if (ordersOfUser == null) {
@@ -276,7 +277,11 @@ public class StudentController {
     @PatchMapping("/order-end")
     @AuthToken
     @ParamNotNull(params = {"fixTableId"})
-    public ResponseTemplate<JSONObject> endOrder(HttpServletRequest request, long fixTableId, String massage, Integer grade) {
+    public ResponseTemplate<JSONObject> endOrder(
+            HttpServletRequest request,
+            long fixTableId,
+            String massage,
+            Integer grade) {
         // resultDetails 可以为空
         if (massage == null) {
             massage = "";
@@ -304,4 +309,45 @@ public class StudentController {
                     .build();
         }
     }
+
+
+    @GetMapping("/order-list")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<List<JSONObject>> getHistoryOrder(HttpServletRequest request) {
+        // 获取当前学生 id
+        String id = userService.getId(request);
+        List<Orders> studentHistoryListDetail = ordersService.getStudentHistoryList(id);
+
+        List<JSONObject> jsonObjects = new ArrayList<>();
+        studentHistoryListDetail.forEach(x -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("fixTableId", x.getFixTableId());
+            jsonObject.put("faultClass", x.getFaultClass());
+            jsonObject.put("endTime", x.getEndTime());
+            jsonObject.put("grade", x.getGrade());
+            jsonObjects.add(jsonObject);
+        });
+
+        return ResponseTemplate
+                .<List<JSONObject>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("历史订单")
+                .data(jsonObjects)
+                .build();
+    }
+
+    @GetMapping("/order-pass")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<Orders> getHistoryOrderDetail(long fixTableId) {
+        Orders studentHistoryDetail = ordersService.getStudentHistoryDetail(fixTableId);
+        return ResponseTemplate.<Orders>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message(CommonEnum.SUCCESS.getResultMsg())
+                .data(studentHistoryDetail)
+                .build();
+    }
 }
+
+

@@ -1,5 +1,6 @@
 package com.alsritter.controller;
 
+import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
 import com.alsritter.annotation.ParamNotNull;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -171,4 +173,65 @@ public class WorkerController {
                     .build();
         }
     }
+
+    @GetMapping("/order-list")
+    @AuthToken
+    public ResponseTemplate<List<JSONObject>> getWorkerHistoryOrder(String workId){
+        List<Orders> workerHistoryList = ordersService.getWorkerHistoryList(workId);
+
+        List<JSONObject> jsonObjects = new ArrayList<>();
+        workerHistoryList.forEach(x -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("fixTableId", x.getFixTableId());
+            jsonObject.put("faultClass", x.getFaultClass());
+            jsonObject.put("endTime", x.getEndTime());
+            jsonObject.put("grade", x.getGrade());
+            jsonObjects.add(jsonObject);
+        });
+
+        return ResponseTemplate
+                .<List<JSONObject>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("历史订单")
+                .data(jsonObjects)
+                .build();
+    }
+
+    //工人历史订单详情
+    @GetMapping("/order-pass")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<List<JSONObject>> getWorkerHistoryOrderDetail(String fixTableId){
+        List<Orders> workerHistoryListDetail = ordersService.getWorkerHistoryList(fixTableId);
+
+        List<JSONObject> jsonObjects = new ArrayList<>();
+        workerHistoryListDetail.forEach(x -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("fixTableId", x.getFixTableId());
+            jsonObject.put("faultClass", x.getFaultClass());
+            jsonObject.put("address",x.getFaultClass());
+            jsonObject.put("workId",x.getWorkId());
+            jsonObject.put("workName",x.getWorkId());
+            jsonObject.put("studentName",x.getStudentId());
+            jsonObject.put("contacts",x.getContacts());
+            jsonObject.put("faultDetail",x.getFaultDetail());
+            jsonObject.put("workerPhone",x.getPhone());
+            jsonObject.put("createTime",x.getCreatedTime());
+            jsonObject.put("endTime", x.getEndTime());
+            jsonObject.put("grade", x.getGrade());
+            jsonObjects.add(jsonObject);
+        });
+
+        return ResponseTemplate
+                .<List<JSONObject>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("历史订单详情")
+                .data(jsonObjects)
+                .build();
+    }
+
+    //工人消息中心
+
+
+    //工人主页
 }

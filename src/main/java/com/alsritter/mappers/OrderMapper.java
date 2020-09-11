@@ -3,6 +3,7 @@ package com.alsritter.mappers;
 import com.alsritter.pojo.Orders;
 import org.apache.ibatis.annotations.*;
 
+import java.util.Date;
 import java.util.List;
 
 public interface OrderMapper {
@@ -60,4 +61,17 @@ public interface OrderMapper {
 
     @Update("update ORDERS_TB set work_id=#{workId} fix_table_id=#{fixTableId}")
     int setOrderWorker(String workId, long fixTableId);
+
+    @ResultMap("order")
+    @Select("select * from ORDERS_TB where state = 2 and student_id = #{studentId};")
+    List<Orders> getStudentHistoryList(String studentId);
+
+    @ResultMap("order")
+    @Select("select * from ORDERS_TB where fix_table_id=#{fixTableId}")
+    Orders getHistoryDetail(long fixTableId);
+
+    @ResultMap("order")
+    @Select("select * from ORDERS_TB where state = 2 and work_id = #{workId};")
+    List<Orders> getWorkerHistoryList(String workId);
+
 }

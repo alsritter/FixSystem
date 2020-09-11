@@ -29,4 +29,6 @@ public interface StudentMapper {
 
     @Update("update STUDENT_TB set name=#{name},phone=#{phone} where student_id = #{studentId}")
     int updateStudent(String studentId, String name, String phone);
+
+
 }

@@ -39,4 +39,7 @@ public interface WorkerMapper {
     @Insert("insert into WORKER_TB (WORK_ID, NAME, GENDER, PASSWORD, PHONE, JOIN_DATE, DETAILS, AVG_GRADE, ORDERS_NUMBER) " +
             "VALUES (#{workId},#{name},#{gender},#{password},#{phone}, NOW(),#{details}, 10, 0)")
     int signUpStudent(String workId, String name, String password, String phone, String gender, String details);
+
+
+
 }

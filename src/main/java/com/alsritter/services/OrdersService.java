@@ -241,4 +241,36 @@ public class OrdersService {
         return i;
     }
 
+
+    public List<Orders> getStudentHistoryList(String studentId) {
+        List<Orders> studentHistoryList = orderMapper.getStudentHistoryList(studentId);
+        if (studentHistoryList == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return studentHistoryList;
+    }
+
+    public Orders getStudentHistoryDetail(long fixTableId) {
+        Orders historyDetail = orderMapper.getHistoryDetail(fixTableId);
+        if (historyDetail == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return historyDetail;
+    }
+
+    public List<Orders> getWorkerHistoryList(String workId) {
+        List<Orders> workerHistoryList = orderMapper.getWorkerHistoryList(workId);
+        if (workerHistoryList == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return workerHistoryList;
+    }
+
+    public Orders getWorkerHistoryDetail(long fixTableId) {
+        Orders historyDetail = orderMapper.getHistoryDetail(fixTableId);
+        if (historyDetail == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return historyDetail;
+    }
 }
