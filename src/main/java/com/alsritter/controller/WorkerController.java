@@ -5,8 +5,10 @@ import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
 import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
+import com.alsritter.pojo.Message;
 import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Worker;
+import com.alsritter.services.MessageService;
 import com.alsritter.services.OrdersService;
 import com.alsritter.services.UserService;
 import com.alsritter.services.WorkerService;
@@ -31,6 +33,12 @@ public class WorkerController {
     private WorkerService workerService;
     private OrdersService ordersService;
     private UserService userService;
+    private MessageService messageService;
+
+    @Autowired
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
+    }
 
     @Autowired
     public void setUserService(UserService userService) {
@@ -155,14 +163,37 @@ public class WorkerController {
                 .message("历史订单详情")
                 .data(workerHistoryDetail)
                 .build();
+
     }
 
-    // 测试
-    //工人消息中心
-//    @GetMapping("/massageList")
-//    @AuthToken
-
-
+    // //工人消息中心
+    @GetMapping("/massage-list")
+    @AuthToken
+    public ResponseTemplate<List<Message>> getMessageList(){
+        List<Message> messageList = messageService.getMessageList();
+        return ResponseTemplate
+                .<List<Message>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("消息列表")
+                .data(messageList)
+                .build();
+    }
 
     //工人主页
+    @GetMapping("/home")
+    @AuthToken
+    public ResponseTemplate<Worker> getWorkerHome(HttpServletRequest request) {
+        Worker workerHome = workerService.getWorkerHome(userService.getId(request));
+        if (workerHome == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+
+        return ResponseTemplate
+                .<Worker>builder()
+                .code(HttpServletResponse.SC_OK)
+                .message("维修工人主页")
+                .data(workerHome)
+                .build();
+    }
+
 }

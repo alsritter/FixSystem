@@ -3,14 +3,11 @@ package com.alsritter.controller;
 import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
+import com.alsritter.annotation.ParamNotNull;
+import com.alsritter.mappers.ToolMapper;
 import com.alsritter.model.ResponseTemplate;
-import com.alsritter.pojo.Admin;
-import com.alsritter.pojo.Orders;
-import com.alsritter.pojo.Worker;
-import com.alsritter.services.AdminService;
-import com.alsritter.services.OrdersService;
-import com.alsritter.services.UserService;
-import com.alsritter.services.WorkerService;
+import com.alsritter.pojo.*;
+import com.alsritter.services.*;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
@@ -22,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author alsritter
@@ -37,6 +35,12 @@ public class AdminController {
     private OrdersService ordersService;
     private WorkerService workerService;
     private UserService userService;
+    private ToolService toolService;
+
+    @Autowired
+    public void setToolService(ToolService toolService) {
+        this.toolService = toolService;
+    }
 
     @Autowired
     public void setUserService(UserService userService) {
@@ -160,86 +164,88 @@ public class AdminController {
                 .build();
     }
 
-    @PatchMapping(value = "/user", produces = "application/json;charset=utf-8")
+    @PatchMapping("/user")
     @AuthToken
-    public String updateUser(String workId, String phone, String gender) {
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 200,\n" +
-                "    \"message\": \"更新成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"更新成功\"\n" +
-                "    }\n" +
-                "}";
+    public ResponseTemplate<JSONObject> updateUser(HttpServletRequest request, String phone, String gender) {
+        String id = userService.getId(request);
+        int i = adminService.updateUser(id, phone, gender);
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        }
+        JSONObject result = new JSONObject();
+        result.put("status", CommonEnum.SUCCESS);
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("更新成功")
+                .data(result)
+                .build();
     }
 
-    @GetMapping(value = "/tool-list", produces = "application/json;charset=utf-8")
+    @GetMapping("/tool-list")
     @AuthToken
-    public String getToolList() {
-        // TODO: 等待实现
-        return "{\n" +
-                "   \"code\": 200,\n" +
-                "   \"message\": \"获取耗材\",\n" +
-                "   \"data\": [\n" +
-                "       {\n" +
-                "       \"toolId\": 1,\n" +
-                "       \"toolName\": \"水管\",\n" +
-                "       \"toolCount\": 100\n" +
-                "       },\n" +
-                "       {\n" +
-                "       \"toolId\": 2,\n" +
-                "       \"toolName\": \"胶布\",\n" +
-                "       \"toolCount\": 100\n" +
-                "       },\n" +
-                "       {\n" +
-                "       \"toolId\": 3,\n" +
-                "       \"toolName\": \"网线\",\n" +
-                "       \"toolCount\": 100\n" +
-                "       }\n" +
-                "   ]\n" +
-                "}";
+    public ResponseTemplate<List<Tool>> getToolList() {
+        List<Tool> toolList = toolService.getToolList();
+        return ResponseTemplate
+                .<List<Tool>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取耗材列表")
+                .data(toolList)
+                .build();
     }
 
-    @PatchMapping(value = "/tool", produces = "application/json;charset=utf-8")
+    @PatchMapping("/tool")
     @AuthToken
-    public String updateTool(long toolId, long toolCount) {
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 200,\n" +
-                "    \"message\": \"修改成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"修改成功\"\n" +
-                "    }\n" +
-                "}";
+    public ResponseTemplate<JSONObject> updateTool(int toolId, int toolCount) {
+        int i = toolService.updateTool(toolId, toolCount);
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("status", CommonEnum.SUCCESS);
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("更新成功")
+                .data(result)
+                .build();
     }
 
-    @PostMapping(value = "/tool", produces = "application/json;charset=utf-8")
+
+    @PostMapping("/tool")
     @AuthToken
-    public String createTool(String toolName, long toolCount) {
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 201,\n" +
-                "    \"message\": \"创建成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"创建成功\"\n" +
-                "    }\n" +
-                "}";
+    public ResponseTemplate<JSONObject> createTool(String toolName, int toolCount) {
+        int i = toolService.createTool(toolName, toolCount);
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("status", CommonEnum.CREATED);
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.CREATED.getResultCode())
+                .message("更新成功")
+                .data(result)
+                .build();
     }
 
-    @DeleteMapping(value = "/tool", produces = "application/json;charset=utf-8")
+    @DeleteMapping("/tool")
     @AuthToken
-    public String deleteTool(long toolId) {
-        // TODO: 等待实现
-        return "{\n" +
-                "    \"code\": 204,\n" +
-                "    \"message\": \"删除成功\",\n" +
-                "    \"data\": {\n" +
-                "        \"status\": \"删除成功\"\n" +
-                "    }\n" +
-                "}";
+    public ResponseTemplate<JSONObject> deleteTool(int toolId) {
+        int i = toolService.deleteTool(toolId);
+        if (i == 0) {
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
+        }
+
+        JSONObject result = new JSONObject();
+        result.put("status", CommonEnum.DELETED);
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.DELETED.getResultCode())
+                .message("删除成功")
+                .data(result)
+                .build();
     }
 
-    @GetMapping(value = "/student-list", produces = "application/json;charset=utf-8")
+    @GetMapping("/student-list")
     @AuthToken
     public String getStudentList() {
         // TODO: 等待实现
@@ -333,44 +339,38 @@ public class AdminController {
     }
 
 
-    @GetMapping(value = "/worker", produces = "application/json;charset=utf-8")
+    @GetMapping("/worker")
     @AuthToken
-    public String getWorker(String workId) {
-        // TODO: 等待实现
-        return "{\n" +
-                " \"code\": 200,\n" +
-                " \"message\": \"工人详情页\",\n" +
-                " \"data\": {\n" +
-                "     \"workId\": \"201825070120\",\n" +
-                "     \"name\": \"张三\",\n" +
-                "     \"gender\": \"男\",\n" +
-                "     \"joinDate\": \"2020-08-09T20:36:26.000Z\",\n" +
-                "     \"phone\": \"13128866666\",\n" +
-                "     \"details\": \"工人的详细介绍信息\",\n" +
-                "     \"avgGrade\": 5,\n" +
-                "     \"ordersNumber\": 15,\n" +
-                "     \"ordersNumberToday\": 1,\n" +
-                "     \"type\": {\n" +
-                "         \"网络\": 10,\n" +
-                "         \"水电\": 25,\n" +
-                "         \"其它\": 30\n" +
-                "     },\n" +
-                "     \"thisMonth\": [\n" +
-                "         {\n" +
-                "             \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
-                "             \"grade\": 4.2\n" +
-                "         },\n" +
-                "         {\n" +
-                "             \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
-                "             \"grade\": 3.2\n" +
-                "         },\n" +
-                "         {\n" +
-                "             \"date\": \"2020-08-09T20:36:26.000Z\",\n" +
-                "             \"grade\": 2.2\n" +
-                "         }\n" +
-                "     ]\n" +
-                " }\n" +
-                "}";
+    @AllParamNotNull
+    public ResponseTemplate<JSONObject> getWorker(String workId) {
+        Worker user = workerService.getWorker(workId);
+        List<Map<String, Object>> faultClassCount = workerService.getFaultClassCount(workId);
+        List<Map<String, Object>> toMonthOrders = workerService.getToMonthOrders(workId);
+        List<Orders> todayOrdersList = ordersService.getTodayOrdersList(workId);
+        int ordersNumberToday = 0;
+        if (todayOrdersList != null) {
+            ordersNumberToday = todayOrdersList.size();
+        }
+
+
+        JSONObject result = new JSONObject();
+        result.put("workId", user.getId());
+        result.put("name", user.getName());
+        result.put("gender", user.getGender());
+        result.put("phone", user.getPhone());
+        result.put("joinDate", user.getJoinDate());
+        result.put("details", user.getDetails());
+        result.put("ordersNumber", user.getOrdersNumber());
+        result.put("avgGrade", user.getAvgGrade());
+        result.put("ordersNumberToday", ordersNumberToday);
+        result.put("type", faultClassCount);
+        result.put("thisMonth", toMonthOrders);
+
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.CREATED.getResultCode())
+                .message("工人详情页")
+                .data(result)
+                .build();
     }
 
     @GetMapping(value = "/statistics", produces = "application/json;charset=utf-8")
@@ -439,4 +439,12 @@ public class AdminController {
                 "    }\n" +
                 "}";
     }
+
+//    @PatchMapping("/user")
+//    @AuthToken
+//    @ParamNotNull(params = {"phone","gender"})
+//    public ResponseTemplate<JSONObject> updateUser(HttpServletRequest request, String name, String phone) {
+//
+//
+//    }
 }

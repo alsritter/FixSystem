@@ -2,6 +2,7 @@ package com.alsritter.controller;
 
 import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.model.ResponseTemplate;
+import com.alsritter.services.FaultService;
 import com.alsritter.services.UserService;
 import com.alsritter.utils.ConstantKit;
 import com.google.code.kaptcha.Producer;
@@ -18,6 +19,7 @@ import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,6 +32,13 @@ import java.util.concurrent.TimeUnit;
 public class UtilsController {
 
     private Producer captchaProducer;
+
+    private FaultService faultService;
+
+    @Autowired
+    public void setFaultService(FaultService faultService) {
+        this.faultService = faultService;
+    }
 
     @Autowired
     public void setCaptchaProducer(Producer captchaProducer) {
@@ -83,14 +92,23 @@ public class UtilsController {
 
     @GetMapping("/is-exist")
     @AllParamNotNull
-    public ResponseTemplate<Boolean> studentIsExist(@NonNull String id) {
-
+    public ResponseTemplate<Boolean> studentIsExist(String id) {
         boolean flag = userService.isExistRedis(id);
 
         return ResponseTemplate.<Boolean>builder()
                 .code(200)
                 .message(flag ? "当前的学生存在" : "当前学生不存在")
                 .data(flag)
+                .build();
+    }
+
+    @GetMapping("/fault-class")
+    public ResponseTemplate<List<String>> getFaultClassList(){
+        List<String> faultClassList = faultService.getFaultClassList();
+        return ResponseTemplate.<List<String>>builder()
+                .code(200)
+                .message("错误类型列表")
+                .data(faultClassList)
                 .build();
     }
 

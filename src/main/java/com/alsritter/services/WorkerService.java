@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 @Service
@@ -129,6 +130,22 @@ public class WorkerService {
             stringTemplate.opsForSet().add(ConstantKit.USER_ID_LIST, workId);
         }
         return i;
+    }
+
+    public Worker getWorkerHome(String workId) {
+        Worker worker = workerMapper.getWorkerHome(workId);
+        if (worker == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return worker;
+    }
+
+    public List<Map<String,Object>> getFaultClassCount(String workId){
+        return workerMapper.getFaultClassCount(workId);
+    }
+
+    public List<Map<String,Object>> getToMonthOrders(String workId){
+        return workerMapper.getToMonthOrders(workId);
     }
 }
 

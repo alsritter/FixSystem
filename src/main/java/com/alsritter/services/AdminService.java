@@ -3,15 +3,13 @@ package com.alsritter.services;
 import com.alsritter.mappers.AdminMapper;
 import com.alsritter.pojo.Admin;
 import com.alsritter.pojo.User;
-import com.alsritter.utils.BizException;
-import com.alsritter.utils.CommonEnum;
-import com.alsritter.utils.ConstantKit;
-import com.alsritter.utils.Md5TokenGenerator;
+import com.alsritter.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +35,17 @@ public class AdminService {
             throw new BizException(CommonEnum.NOT_FOUND);
         }
         return user;
+    }
+
+    @Transactional
+    public int updateUser(String id,String phone, String gender){
+        int i = 0;
+        try {
+            i = adminMapper.updateUser(id, phone, gender);
+        } catch (RuntimeException e) {
+            throw new MyDBError("更新管理员的数据出现问题", e);
+        }
+        return i;
     }
 
 }

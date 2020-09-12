@@ -73,4 +73,8 @@ public interface OrderMapper {
     @ResultMap("order")
     @Select("select * from ORDERS_TB where state = 2 and work_id = #{workId};")
     List<Orders> getWorkerHistoryList(String workId);
+
+    @ResultMap("order")
+    @Select("select * from ORDERS_TB where to_days(end_time) = to_days(now()) and  work_id = #{workId}")
+    List<Orders> getTodayOrdersList(String workId);
 }

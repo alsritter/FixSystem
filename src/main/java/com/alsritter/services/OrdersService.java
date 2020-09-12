@@ -1,5 +1,6 @@
 package com.alsritter.services;
 
+import com.alsritter.mappers.FaultMapper;
 import com.alsritter.mappers.OrderMapper;
 import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Worker;
@@ -25,6 +26,13 @@ public class OrdersService {
     @Resource
     public OrderMapper orderMapper;
     private WorkerService workerService;
+    private FaultService faultService;
+
+
+    @Autowired
+    public void setFaultService(FaultService faultService) {
+        this.faultService = faultService;
+    }
 
     @Autowired
     public void setWorkerService(WorkerService workerService) {
@@ -220,6 +228,8 @@ public class OrdersService {
             String phone,
             String faultDetails
     ) {
+        // 检查这个错误类型是否是在数据库中的
+        faultService.isExist(faultClass);
         int i = 0;
         try {
             i = orderMapper.createOrder(studentId, contacts, phone, faultClass, address, faultDetails);
@@ -273,5 +283,9 @@ public class OrdersService {
             throw new BizException(CommonEnum.NOT_FOUND);
         }
         return historyDetail;
+    }
+
+    public List<Orders> getTodayOrdersList(String workId) {
+        return orderMapper.getTodayOrdersList(workId);
     }
 }
