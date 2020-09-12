@@ -128,12 +128,7 @@ public class AdminController {
                     .data(result)
                     .build();
         } else {
-            result.put("status", "当前工人不存在");
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(404)
-                    .message("当前工人不存在")
-                    .data(result)
-                    .build();
+            throw new BizException(CommonEnum.NOT_FOUND);
         }
     }
 
