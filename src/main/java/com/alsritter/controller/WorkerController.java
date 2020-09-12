@@ -176,9 +176,9 @@ public class WorkerController {
 
     @GetMapping("/order-list")
     @AuthToken
-    public ResponseTemplate<List<JSONObject>> getWorkerHistoryOrder(String workId){
-        List<Orders> workerHistoryList = ordersService.getWorkerHistoryList(workId);
-
+    public ResponseTemplate<List<JSONObject>> getWorkerHistoryOrder(HttpServletRequest request){
+        String id = userService.getId(request);
+        List<Orders> workerHistoryList = ordersService.getWorkerHistoryList(id);
         List<JSONObject> jsonObjects = new ArrayList<>();
         workerHistoryList.forEach(x -> {
             JSONObject jsonObject = new JSONObject();
@@ -201,37 +201,21 @@ public class WorkerController {
     @GetMapping("/order-pass")
     @AuthToken
     @AllParamNotNull
-    public ResponseTemplate<List<JSONObject>> getWorkerHistoryOrderDetail(String fixTableId){
+    public ResponseTemplate<List<Orders>> getWorkerHistoryOrderDetail(String fixTableId){
         List<Orders> workerHistoryListDetail = ordersService.getWorkerHistoryList(fixTableId);
-
-        List<JSONObject> jsonObjects = new ArrayList<>();
-        workerHistoryListDetail.forEach(x -> {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("fixTableId", x.getFixTableId());
-            jsonObject.put("faultClass", x.getFaultClass());
-            jsonObject.put("address",x.getFaultClass());
-            jsonObject.put("workId",x.getWorkId());
-            jsonObject.put("workName",x.getWorkId());
-            jsonObject.put("studentName",x.getStudentId());
-            jsonObject.put("contacts",x.getContacts());
-            jsonObject.put("faultDetail",x.getFaultDetail());
-            jsonObject.put("workerPhone",x.getPhone());
-            jsonObject.put("createTime",x.getCreatedTime());
-            jsonObject.put("endTime", x.getEndTime());
-            jsonObject.put("grade", x.getGrade());
-            jsonObjects.add(jsonObject);
-        });
-
         return ResponseTemplate
-                .<List<JSONObject>>builder()
+                .<List<Orders>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message("历史订单详情")
-                .data(jsonObjects)
+                .data(workerHistoryListDetail)
                 .build();
     }
 
-        // 测试
+
     //工人消息中心
+//    @GetMapping("/massageList")
+//    @AuthToken
+
 
 
     //工人主页
