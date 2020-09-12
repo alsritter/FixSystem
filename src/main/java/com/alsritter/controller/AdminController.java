@@ -14,19 +14,14 @@ import com.alsritter.services.WorkerService;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
-import com.alsritter.utils.Md5TokenGenerator;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 /**
  * @author alsritter
@@ -38,7 +33,7 @@ import java.util.regex.Pattern;
 public class AdminController {
 
     private AdminService adminService;
-    private Md5TokenGenerator tokenGenerator;
+
     private OrdersService ordersService;
     private WorkerService workerService;
     private UserService userService;
@@ -59,19 +54,9 @@ public class AdminController {
     }
 
     @Autowired
-    public void setTokenGenerator(Md5TokenGenerator tokenGenerator) {
-        this.tokenGenerator = tokenGenerator;
-    }
-
-    @Resource
-    StringRedisTemplate stringTemplate;
-
-
-    @Autowired
     public void setOrdersService(OrdersService ordersService) {
         this.ordersService = ordersService;
     }
-
 
     @PostMapping(value = "/login")
     @AllParamNotNull
@@ -83,74 +68,23 @@ public class AdminController {
             String password) {
         // 先查询数据
         Admin user = adminService.adminLogin(workId, password);
+        // 再生成 Token
+        String token = userService.createToken(user, ConstantKit.UserKey.ADMIN);
+
         JSONObject result = new JSONObject();
-
-        if (user != null) {
-
-            ValueOperations<String, String> valueOperations = stringTemplate.opsForValue();
-
-            // 需要先检查当前是否已经有 Token 了,如果已经有 Token 了先销毁之前的 Token,再创建新的
-            String beforeToken = valueOperations.get(workId);
-            if (beforeToken != null && !beforeToken.trim().equals("")) {
-                // 只需删除用 token 当 key 存的 workId,因为 workId 当 key 的那个会给覆盖掉
-                stringTemplate.delete(beforeToken);
-                // 还需要把那个由 token + workId 组成的用来记录创建时间的 key 删掉
-                stringTemplate.delete(beforeToken + workId);
-                log.debug("删除了之前的 Token: {}", beforeToken);
-            }
-
-            // 生成新的 Token
-            String token = tokenGenerator.generate(workId, password);
-
-            valueOperations.set(workId, token);
-            //设置 key 生存时间，当 key 过期时，它会被自动删除，时间是秒
-            stringTemplate.expire(workId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
-
-            valueOperations.set(token, workId);
-            stringTemplate.expire(token, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
-
-            // 这一步主要是记录创建的时间，拦截器通过创建时间计算还有多久过期
-            valueOperations.set(token + workId, Long.toString(System.currentTimeMillis()));
-            stringTemplate.expire(token + workId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
-
-
-            result.put("status", "登录成功");
-            result.put("workId", user.getWorkId());
-            result.put("name", user.getName());
-            result.put("gender", user.getGender());
-            result.put("joinDate", user.getJoinDate());
-            result.put("phone", user.getPhone());
-            result.put("details", user.getDetails());
-            result.put("token", token);
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(HttpServletResponse.SC_OK)
-                    .message("登陆成功")
-                    .data(result)
-                    .build();
-        } else {
-            result.put("status", "当前工人不存在");
-            return ResponseTemplate.<JSONObject>builder()
-                    .code(404)
-                    .message("当前工人不存在")
-                    .data(result)
-                    .build();
-        }
-    }
-
-    //测试权限访问
-    @GetMapping(value = "/test")
-    @AuthToken
-    public ResponseTemplate<String> test() {
-
-        log.info("已进入test路径");
-
-        return ResponseTemplate.<String>builder()
-                .code(200)
-                .message("Success")
-                .data("test url")
+        result.put("workId", user.getId());
+        result.put("name", user.getName());
+        result.put("gender", user.getGender());
+        result.put("joinDate", user.getJoinDate());
+        result.put("phone", user.getPhone());
+        result.put("details", user.getDetails());
+        result.put("token", token);
+        return ResponseTemplate.<JSONObject>builder()
+                .code(HttpServletResponse.SC_OK)
+                .message("登陆成功")
+                .data(result)
                 .build();
     }
-
 
     @GetMapping("/order-list")
     @AuthToken
@@ -170,11 +104,6 @@ public class AdminController {
     @AuthToken
     public ResponseTemplate<Orders> getOrder(@RequestParam long fixTableId) {
         Orders orders = ordersService.getOrder(fixTableId);
-
-        if (orders == null) {
-            throw new BizException(CommonEnum.NOT_FOUND);
-        }
-
         return ResponseTemplate
                 .<Orders>builder()
                 .code(HttpServletResponse.SC_OK)
@@ -213,8 +142,11 @@ public class AdminController {
 
     @PatchMapping("/select-worker")
     @AuthToken
-    public ResponseTemplate<JSONObject> selectLeisureWorker(String workId, long fixTableId) {
-        int i = workerService.selectLeisureWorker(workId, fixTableId);
+    public ResponseTemplate<JSONObject> selectLeisureWorker(
+            HttpServletRequest request,
+            String workId,
+            long fixTableId) {
+        int i = workerService.selectLeisureWorker(userService.getId(request), workId, fixTableId);
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }
@@ -381,36 +313,16 @@ public class AdminController {
             String gender,
             String details
     ) {
-        //验证工号格式是否正确(只能是数字和 "-")
-        if (!Pattern.compile("^-?\\d+(\\.\\d+)?$").matcher(workId).matches()) {
-            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "工号格式错误");
-        }
-
-        //检验是否已经有这个工人
-        if (userService.isExistRedis(workId)) {
-            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "工人已经存在");
-        }
-
-
-        //验证手机号码正确性
-        String regex = "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$";
-        if (!Pattern.compile(regex).matcher(phone).matches()) {
-            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "手机号错误");
-        }
-
         int i = 0;
-
         try {
             // 在 Controller 里处理错误，而非在 Service
             i = workerService.signUpStudent(workId, name, password, phone, gender, details);
         } catch (RuntimeException e) {
             log.warn(e.getMessage());
         }
-
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }
-
         JSONObject result = new JSONObject();
         result.put("status", CommonEnum.CREATED);
         return ResponseTemplate.<JSONObject>builder()

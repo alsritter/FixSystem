@@ -59,8 +59,8 @@ public interface OrderMapper {
     @Delete("delete from ORDERS_TB where fix_table_id = #{fixTableId}")
     int deleteOrder(long fixTableId);
 
-    @Update("update ORDERS_TB set work_id=#{workId} fix_table_id=#{fixTableId}")
-    int setOrderWorker(String workId, long fixTableId);
+    @Update("update ORDERS_TB set work_id=#{workId}, admin_work_id=#{adminId} where fix_table_id=#{fixTableId}")
+    int setOrderWorker(String adminId , String workId, long fixTableId);
 
     @ResultMap("order")
     @Select("select * from ORDERS_TB where state = 2 and student_id = #{studentId};")
@@ -73,5 +73,4 @@ public interface OrderMapper {
     @ResultMap("order")
     @Select("select * from ORDERS_TB where state = 2 and work_id = #{workId};")
     List<Orders> getWorkerHistoryList(String workId);
-
 }

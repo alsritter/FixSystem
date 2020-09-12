@@ -79,24 +79,50 @@ public class AuthorizationTokenInterceptor implements HandlerInterceptor {
             // 检查 request Header，默认是在 Authorization 存放鉴权信息的
             String token = request.getHeader("Authorization");
             // logger 的 {} 就是占位符
-            log.info("Get token from request is {} ", token);
+            log.debug("Get token from request is {} ", token);
             String userId = "";
+
+            String url = request.getRequestURI();
+            // 这里加一层判断当前是哪种用户的 Token
+            log.debug("请求路径为：{}",url);
+            // 取得根路径 worker、admin、student
+            String rootUrl = url.split("/")[1];
+            String key = "";
+
+            // 设置一个 flag 来分别获取不同的 Token
+            switch (rootUrl) {
+                case "worker":
+                    key = ConstantKit.UserKey.WORKER.toString();
+                    break;
+                case "admin":
+                    key = ConstantKit.UserKey.ADMIN.toString();
+                    break;
+                case "student":
+                    key = ConstantKit.UserKey.STUDENT.toString();
+                    break;
+                default:
+                    return true;
+            }
 
             ValueOperations<String, String> valueOperations = stringTemplate.opsForValue();
 
             if (token != null && token.length() != 0) {
-                userId = valueOperations.get(token);
-                log.info("Get username from Redis is {}", userId);
-            }
+                // 注意：因为之前没有考虑多类型用户的 Token 鉴别问题，所以这里直接加个 Key 来避免更改太多下面的代码
+                token = key + token;
 
-            // 非空则判断超时
-            if (userId != null && !userId.trim().equals("")) {
+                userId = valueOperations.get(token);
+                if (userId == null) {
+                    throw new BizException(CommonEnum.UNAUTHORIZED);
+                }
+
+                log.debug("Get username from Redis is {}", userId);
+
                 // 获取距离 Token 创建已经过了多久
                 long tokeBirthTime = Long.parseLong(Objects.requireNonNull(valueOperations.get(token + userId)));
-                log.info("token Birth time is: {}", tokeBirthTime);
+                log.debug("token Birth time is: {}", tokeBirthTime);
                 long diff = System.currentTimeMillis() - tokeBirthTime;
 
-                log.info("token is exist : {} ms", diff);
+                log.debug("token is exist : {} ms", diff);
 
                 // 当距离超时还剩半个小时时则刷新 Token 的过期时间
                 // ConstantKit.TOKEN_EXPIRE_TIME 以秒为单位
@@ -106,7 +132,7 @@ public class AuthorizationTokenInterceptor implements HandlerInterceptor {
                     // 也重置一下创建时间
                     valueOperations.set(token + userId, Long.toString(System.currentTimeMillis()));
                     stringTemplate.expire(token + userId, ConstantKit.TOKEN_EXPIRE_TIME, TimeUnit.SECONDS);
-                    log.info("Reset expire time success!");
+                    log.debug("Reset expire time success!");
                 }
 
                 // 如果 token 验证成功，将 token 对应的 userId 存在 request 中，以后就可以无须登陆直接取到 userId
