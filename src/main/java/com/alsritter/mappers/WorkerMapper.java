@@ -10,7 +10,7 @@ public interface WorkerMapper {
 
     //工人登录
     @Results(id = "worker",value = {
-            @Result(column = "WORK_ID",property = "workId"),
+            @Result(column = "WORK_ID",property = "id"),
             @Result(column = "ORDERS_NUMBER",property = "ordersNumber"),
             @Result(column = "JOIN_DATE", property = "joinDate"),
             @Result(column = "AVG_GRADE", property = "avgGrade")

@@ -29,7 +29,6 @@ public class GlobalReturnHandler implements ResponseBodyAdvice<ResponseTemplate<
 
     @Override
     public ResponseTemplate<Object> beforeBodyWrite(ResponseTemplate<Object> body, MethodParameter returnType, MediaType selectedContentType, Class<? extends HttpMessageConverter<?>> selectedConverterType, ServerHttpRequest request, ServerHttpResponse response) {
-        log.debug("响应码为：{}  响应数据为：{}", body.getCode(), body.getData());
         response.setStatusCode(HttpStatus.valueOf(body.getCode()));
         return body;
     }

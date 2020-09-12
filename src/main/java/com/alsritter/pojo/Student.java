@@ -5,8 +5,8 @@ import lombok.ToString;
 
 @ToString
 @Data
-public class Student {
-  private String studentId;
+public class Student implements User{
+  private String id;
   private String name;
   private String gender;
   private String password;

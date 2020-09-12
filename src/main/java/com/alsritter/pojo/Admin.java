@@ -8,9 +8,9 @@ import java.util.Date;
 
 @Data
 @ToString
-public class Admin {
+public class Admin implements User{
 
-  private String workId;
+  private String id;
   private String name;
   private String gender;
   private String password;

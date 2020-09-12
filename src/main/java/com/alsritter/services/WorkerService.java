@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -26,13 +27,25 @@ public class WorkerService {
     @Resource
     StringRedisTemplate stringTemplate;
 
+
+    private UserService userService;
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
     @Autowired
     public void setOrdersService(OrdersService ordersService) {
         this.ordersService = ordersService;
     }
 
     public Worker loginWorker(String workId, String password) {
-        return workerMapper.loginWorker(workId, password);
+        Worker worker = workerMapper.loginWorker(workId, password);
+        if (worker == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return worker;
     }
 
     @Transactional
@@ -55,16 +68,11 @@ public class WorkerService {
     }
 
     public List<Worker> getLeisureWorkerList() {
-        List<Worker> leisureWorkerList = workerMapper.getLeisureWorkerList();
-        if (leisureWorkerList == null) {
-            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
-        }
-
-        return leisureWorkerList;
+        return workerMapper.getLeisureWorkerList();
     }
 
     @Transactional
-    public int selectLeisureWorker(String workId, long fixTableId) {
+    public int selectLeisureWorker(String adminId ,String workId, long fixTableId) {
         // 先判断当前工人是否处于工作状态
         Worker worker = workerMapper.getWorker(workId);
         if (worker == null) {
@@ -83,7 +91,7 @@ public class WorkerService {
         int j = 0;
         try {
             setState(workId, 1);
-            j = ordersService.setOrderWorker(workId, fixTableId);
+            j = ordersService.setOrderWorker(adminId ,workId, fixTableId);
         } catch (RuntimeException e) {
             throw new MyDBError("指定工作错误：", e);
         }
@@ -94,6 +102,22 @@ public class WorkerService {
     // 别忘了要配置事务
     @Transactional
     public int signUpStudent(String workId, String name, String password, String phone, String gender, String details) {
+        //验证工号格式是否正确(只能是数字和 "-")
+        if (!Pattern.compile("^-?\\d+(\\.\\d+)?$").matcher(workId).matches()) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "工号格式错误");
+        }
+
+        //检验是否已经有这个工人
+        if (userService.isExistRedis(workId)) {
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "工人已经存在");
+        }
+
+        //验证手机号码正确性
+        String regex = "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$";
+        if (!Pattern.compile(regex).matcher(phone).matches()) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "手机号错误");
+        }
+
         int i = 0;
         try {
             i = workerMapper.signUpStudent(workId, name, password, phone, gender, details);

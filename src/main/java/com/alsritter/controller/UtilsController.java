@@ -1,13 +1,8 @@
 package com.alsritter.controller;
 
 import com.alsritter.annotation.AllParamNotNull;
-import com.alsritter.annotation.AuthToken;
 import com.alsritter.model.ResponseTemplate;
-import com.alsritter.pojo.Orders;
-import com.alsritter.services.OrdersService;
 import com.alsritter.services.UserService;
-import com.alsritter.utils.BizException;
-import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
 import com.google.code.kaptcha.Producer;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +11,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -34,13 +28,6 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/utils")
 public class UtilsController {
-
-    private OrdersService ordersService;
-
-    @Autowired
-    public void setOrdersService(OrdersService ordersService) {
-        this.ordersService = ordersService;
-    }
 
     private Producer captchaProducer;
 

@@ -626,7 +626,6 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
       "name": "李四",
       "details": "俺就是个小透明",
       "workId": "201835070322",
-      "status": "登录成功",
       "token": "df2fd4702b4b28070a43f4f1428d1797"
       }
 }

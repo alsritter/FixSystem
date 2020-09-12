@@ -231,10 +231,11 @@ public class OrdersService {
 
 
     @Transactional
-    public int setOrderWorker(String workId, long fixTableId) {
+    public int setOrderWorker(String adminId,String workId, long fixTableId) {
         int i = 0;
         try {
-            i = orderMapper.setOrderWorker(workId, fixTableId);
+            // 别忘了再插入管理员的 id
+            i = orderMapper.setOrderWorker(adminId, workId, fixTableId);
         } catch (RuntimeException e) {
             throw new MyDBError("指定订单处理工作人员失败", e);
         }

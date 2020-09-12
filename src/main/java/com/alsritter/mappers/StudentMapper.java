@@ -10,11 +10,11 @@ import java.util.List;
 
 public interface StudentMapper {
     // 如果只有一个映射可以直接使用 @Result 而不是 @Results
-    @Result(column = "student_id", property = "studentId")
+    @Result(column = "student_id", property = "id")
     @Select("select * from STUDENT_TB WHERE student_id=#{studentId} and password=#{password}")
     Student loginStudent(String studentId, String password);
 
-    @Result(column = "student_id", property = "studentId")
+    @Result(column = "student_id", property = "id")
     @Select("select * from STUDENT_TB WHERE student_id=#{studentId}")
     Student getStudent(String studentId);
 
