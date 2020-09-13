@@ -67,7 +67,7 @@ public class WebConfig implements WebMvcConfigurer {
         // 或者写上请求头里 Origin 的内容（用逗号分隔多个） .allowedOrigins("http://127.0.0.1:5500")
         registry.addMapping("/**")
                 .allowedOrigins("*")
-                .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowCredentials(true)
                 .maxAge(3600)
                 .allowedHeaders("*");
