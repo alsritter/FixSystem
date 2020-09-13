@@ -59,7 +59,7 @@ public interface OrderMapper {
     @Delete("delete from ORDERS_TB where fix_table_id = #{fixTableId}")
     int deleteOrder(long fixTableId);
 
-    @Update("update ORDERS_TB set work_id=#{workId}, admin_work_id=#{adminId} where fix_table_id=#{fixTableId}")
+    @Update("update ORDERS_TB set work_id=#{workId}, admin_work_id=#{adminId}, state = 1 where fix_table_id=#{fixTableId}")
     int setOrderWorker(String adminId , String workId, long fixTableId);
 
     @ResultMap("order")

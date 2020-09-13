@@ -76,8 +76,9 @@ public class WorkerService {
     public int selectLeisureWorker(String adminId ,String workId, long fixTableId) {
         // 先判断当前工人是否处于工作状态
         Worker worker = workerMapper.getWorker(workId);
+
         if (worker == null) {
-            throw new BizException(CommonEnum.NOT_FOUND);
+            throw new BizException(CommonEnum.NOT_FOUND.getResultCode(), "找不到该工人！");
         }
         if (worker.getState() == 1) {
             throw new BizException(CommonEnum.FORBIDDEN.getResultCode(),"当前工人已经在工作了，请不要再压榨他了");
@@ -91,6 +92,7 @@ public class WorkerService {
 
         int j = 0;
         try {
+            // 这个只是用来修改工人状态的，并非修改订单的状态
             setState(workId, 1);
             j = ordersService.setOrderWorker(adminId ,workId, fixTableId);
         } catch (RuntimeException e) {

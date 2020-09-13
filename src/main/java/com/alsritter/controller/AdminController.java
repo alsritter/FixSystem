@@ -108,7 +108,7 @@ public class AdminController {
     @GetMapping("/order")
     @AllParamNotNull
     @AuthToken
-    public ResponseTemplate<Orders> getOrder(@RequestParam long fixTableId) {
+    public ResponseTemplate<Orders> getOrder(long fixTableId) {
         Orders orders = ordersService.getOrder(fixTableId);
         return ResponseTemplate
                 .<Orders>builder()

@@ -1,6 +1,5 @@
 package com.alsritter.services;
 
-import com.alsritter.mappers.FaultMapper;
 import com.alsritter.mappers.OrderMapper;
 import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Worker;
@@ -53,14 +52,12 @@ public class OrdersService {
 
     @Transactional
     public int deleteOrder(long fixTableId) {
-        // 先查询当前要处理的订单是什么情况
-
         // 为空时抛出异常
         Orders order = getOrder(fixTableId);
 
         // 不能是状态为 2 的订单
         if (order.getState() == 2) {
-            throw new BizException(CommonEnum.FORBIDDEN);
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "该订单已经是历史订单了，不能删");
         }
 
         // 没有指定工人的订单直接删
@@ -165,6 +162,7 @@ public class OrdersService {
     /**
      * <b>
      * 这个是给工人处理结果说明的
+     * 注意！！！ 评价完成后要把工人的状态改回 0
      * </b>
      * <br>
      *
@@ -174,9 +172,16 @@ public class OrdersService {
      */
     @Transactional
     public int endOrder(long fixTableId, String resultDetails) {
+        // 先找到订单的工人
+        Orders order = getOrder(fixTableId);
+        if (order.getWorkId() == null) {
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "该订单没有指定工人！！！");
+        }
+
         int i = 0;
         try {
             i = orderMapper.endOrder(fixTableId, resultDetails);
+            workerService.setState(order.getWorkId(), 0);
         } catch (RuntimeException e) {
             throw new MyDBError("修改数据错误：", e);
         }
@@ -185,7 +190,7 @@ public class OrdersService {
 
     /**
      * <b>
-     * 这个是给学生评价的，注意 这个给分需要先算出平均分
+     * 这个是学生评价的结束服务，注意 这个给分需要先算出平均分
      * </b>
      * <br>
      *
@@ -241,7 +246,7 @@ public class OrdersService {
 
 
     @Transactional
-    public int setOrderWorker(String adminId,String workId, long fixTableId) {
+    public int setOrderWorker(String adminId, String workId, long fixTableId) {
         int i = 0;
         try {
             // 别忘了再插入管理员的 id
