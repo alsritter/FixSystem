@@ -4,6 +4,9 @@ import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
+import org.springframework.boot.context.properties.bind.BindException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -65,6 +68,79 @@ public class GlobalExceptionHandler {
             response.setContentType("application/json;charset=utf-8");
             jsonObject.put("code", CommonEnum.BAD_REQUEST.getResultCode());
             jsonObject.put("message", e.getMessage() + CommonEnum.BAD_REQUEST);
+            out = response.getWriter();
+            out.println(jsonObject);
+        } finally {
+            if (null != out) {
+                out.flush();
+                out.close();
+            }
+        }
+    }
+
+
+    /**
+     * api 请求类型不符异常
+     */
+    @ExceptionHandler(value = HttpRequestMethodNotSupportedException.class)
+    public void exceptionHandler(HttpServletResponse response, HttpRequestMethodNotSupportedException e) throws IOException {
+        log.error("api 请求类型不符合 当前请求的方法是: {}", e.getMethod());
+        JSONObject jsonObject = new JSONObject();
+        PrintWriter out = null;
+        try {
+            //鉴权失败后返回的HTTP错误码，默认为401
+            response.setStatus(CommonEnum.FORBIDDEN.getResultCode());
+            response.setContentType("application/json;charset=utf-8");
+            jsonObject.put("code", CommonEnum.FORBIDDEN.getResultCode());
+            jsonObject.put("message", e.getMessage() + " 请求类型不符！");
+            out = response.getWriter();
+            out.println(jsonObject);
+        } finally {
+            if (null != out) {
+                out.flush();
+                out.close();
+            }
+        }
+    }
+
+    /**
+     * 参数读取异常
+     */
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    public void exceptionHandler(HttpServletResponse response, HttpMessageNotReadableException e) throws IOException {
+        log.error("参数读取异常 HTTP 请求的是: {}", e.getHttpInputMessage());
+        JSONObject jsonObject = new JSONObject();
+        PrintWriter out = null;
+        try {
+            //鉴权失败后返回的HTTP错误码，默认为401
+            response.setStatus(CommonEnum.BAD_REQUEST.getResultCode());
+            response.setContentType("application/json;charset=utf-8");
+            jsonObject.put("code", CommonEnum.BAD_REQUEST.getResultCode());
+            jsonObject.put("message", e.getMessage() + " 参数读取异常！");
+            out = response.getWriter();
+            out.println(jsonObject);
+        } finally {
+            if (null != out) {
+                out.flush();
+                out.close();
+            }
+        }
+    }
+
+    /**
+     * 请求参数绑定到 java bean 上失败时抛出
+     */
+    @ExceptionHandler(value = BindException.class)
+    public void exceptionHandler(HttpServletResponse response, BindException e) throws IOException {
+        log.error("参数绑定到 Bean 上异常，来源于：{}  要绑定的属性名是：{}", e.getOrigin(), e.getProperty());
+        JSONObject jsonObject = new JSONObject();
+        PrintWriter out = null;
+        try {
+            //鉴权失败后返回的HTTP错误码，默认为401
+            response.setStatus(CommonEnum.BAD_REQUEST.getResultCode());
+            response.setContentType("application/json;charset=utf-8");
+            jsonObject.put("code", CommonEnum.BAD_REQUEST.getResultCode());
+            jsonObject.put("message", e.getMessage() + " 参数绑定异常！");
             out = response.getWriter();
             out.println(jsonObject);
         } finally {
