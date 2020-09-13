@@ -42,8 +42,8 @@ public class ParamNotNullInterceptor implements HandlerInterceptor {
                 String name = parameter.getName();
 
                 // 注意：一些非指定的参数需要屏蔽
-                if (request.getParameter(name) == null ||
-                        request.getParameter(name).isEmpty() &&
+                if ((request.getParameter(name) == null ||
+                        request.getParameter(name).isEmpty()) &&
                         parameter.getType() != HttpServletResponse.class &&
                         parameter.getType() != HttpServletRequest.class
                 ) {

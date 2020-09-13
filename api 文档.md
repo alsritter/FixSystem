@@ -606,7 +606,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 
 ## 管理员页面
 
-### 登陆 👌
+### 登陆 👌 👌🏿
 
 - 请求路径：admin/login
 - 请求方法：post
@@ -648,7 +648,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 ```
 
 
-### 获取订单 List 🔒 👌
+### 获取订单 List 🔒 👌 👌🏿
 
 - 请求路径：admin/order-list
 - 请求方法：get
@@ -717,7 +717,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 ```
 注意这个订单 id，后面点进每个历史订单查询数据就是通过这个 id 来查的
 
-### 订单详情 🔒 👌
+### 订单详情 🔒 👌 👌🏿
 
 - 请求路径：admin/order
 - 请求方法：get
@@ -805,7 +805,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 }        
 ```
 
-### 取消订单 🔒 👌
+### 取消订单 🔒 👌 👌🏿
 
 - 请求路径：admin/order
 - 请求方法：delete
@@ -834,7 +834,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 
 
 
-### 获取空闲工人列表 🔒 👌
+### 取空闲工人列表 🔒 👌 👌🏿
 
 - 请求路径：admin/select-worker
 - 请求方法：get
@@ -875,7 +875,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 }
 ```
 
-### 选择工人 🔒 👌
+### 选择工人 🔒 👌 👌🏿
 
 - 请求路径：admin/select-worker
 - 请求方法：patch
@@ -959,7 +959,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 ```
 
 
-### 耗材管理 🔒  👌
+### 修改耗材数量 🔒  👌
 - 请求路径：admin/tool
 - 请求方法：patch
 - 请求参数
