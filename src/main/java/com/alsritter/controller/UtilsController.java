@@ -4,6 +4,7 @@ import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.services.FaultService;
 import com.alsritter.services.UserService;
+import com.alsritter.utils.BizException;
 import com.alsritter.utils.ConstantKit;
 import com.google.code.kaptcha.Producer;
 import lombok.extern.slf4j.Slf4j;
@@ -111,5 +112,6 @@ public class UtilsController {
                 .data(faultClassList)
                 .build();
     }
+
 
 }

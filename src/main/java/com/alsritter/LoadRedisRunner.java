@@ -57,7 +57,5 @@ public class LoadRedisRunner implements CommandLineRunner {
         adminWorkerIdList.forEach(o -> {
             stringTemplate.opsForSet().add(ConstantKit.USER_ID_LIST, o);
         });
-
-        stringTemplate.opsForSet().members(ConstantKit.USER_ID_LIST).forEach(o -> log.debug("当前数据：{}", o));
     }
 }

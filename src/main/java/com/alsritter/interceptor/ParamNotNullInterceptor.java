@@ -23,6 +23,8 @@ import java.lang.reflect.Parameter;
 public class ParamNotNullInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 先打印一下请求路径
+        log.debug("请求路径为：{}", request.getRequestURI());
         // 这个 HandlerMethod 可以用来匹配 Controller，如果不是 Controller 则跳过
         if (!(handler instanceof HandlerMethod)) {
             return true;
@@ -38,14 +40,15 @@ public class ParamNotNullInterceptor implements HandlerInterceptor {
             Parameter[] parameters = method.getParameters();
             for (Parameter parameter : parameters) {
                 String name = parameter.getName();
-                log.debug("参数名为：{}  参数类型为：{}", name, parameter.getType());
+
                 // 注意：一些非指定的参数需要屏蔽
                 if (request.getParameter(name) == null &&
                         parameter.getType() != HttpServletResponse.class &&
                         parameter.getType() != HttpServletRequest.class
                 ) {
-                    throw new BizException(CommonEnum.BAD_REQUEST);
+                    throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "请求参数不能为空！！");
                 }
+                log.debug("参数名为：{}  参数类型为：{} 参数的值为：{}", name, parameter.getType(), request.getParameter(name));
             }
             return true;
         }
@@ -62,7 +65,7 @@ public class ParamNotNullInterceptor implements HandlerInterceptor {
                     String parameter = request.getParameter(s);
                     log.debug(parameter);
                     if (parameter == null) {
-                        throw new BizException(CommonEnum.BAD_REQUEST);
+                        throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "请求参数不能为空！！");
                     }
                 }
                 return true;
@@ -74,7 +77,7 @@ public class ParamNotNullInterceptor implements HandlerInterceptor {
                 if (null != obj) {
                     return true;
                 }
-                throw new BizException(CommonEnum.BAD_REQUEST);
+                throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "请求参数不能为空！！");
             }
         }
 

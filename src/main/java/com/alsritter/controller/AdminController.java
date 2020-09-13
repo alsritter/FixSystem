@@ -91,6 +91,7 @@ public class AdminController {
     }
 
     @GetMapping("/order-list")
+    @AllParamNotNull
     @AuthToken
     public ResponseTemplate<List<Orders>> orderList() {
         List<Orders> allOrders = ordersService.getAllOrders();
@@ -105,6 +106,7 @@ public class AdminController {
 
 
     @GetMapping("/order")
+    @AllParamNotNull
     @AuthToken
     public ResponseTemplate<Orders> getOrder(@RequestParam long fixTableId) {
         Orders orders = ordersService.getOrder(fixTableId);
@@ -118,6 +120,7 @@ public class AdminController {
 
 
     @DeleteMapping("/order")
+    @AllParamNotNull
     @AuthToken
     public ResponseTemplate<JSONObject> deleteOrder(long fixTableId) {
         if (ordersService.deleteOrder(fixTableId) == 0) {
@@ -145,6 +148,7 @@ public class AdminController {
     }
 
     @PatchMapping("/select-worker")
+    @AllParamNotNull
     @AuthToken
     public ResponseTemplate<JSONObject> selectLeisureWorker(
             HttpServletRequest request,
@@ -166,6 +170,7 @@ public class AdminController {
 
     @PatchMapping("/user")
     @AuthToken
+    @AllParamNotNull
     public ResponseTemplate<JSONObject> updateUser(HttpServletRequest request, String phone, String gender) {
         String id = userService.getId(request);
         int i = adminService.updateUser(id, phone, gender);
@@ -195,6 +200,7 @@ public class AdminController {
 
     @PatchMapping("/tool")
     @AuthToken
+    @AllParamNotNull
     public ResponseTemplate<JSONObject> updateTool(int toolId, int toolCount) {
         int i = toolService.updateTool(toolId, toolCount);
         if (i == 0) {
@@ -213,6 +219,7 @@ public class AdminController {
 
     @PostMapping("/tool")
     @AuthToken
+    @AllParamNotNull
     public ResponseTemplate<JSONObject> createTool(String toolName, int toolCount) {
         int i = toolService.createTool(toolName, toolCount);
         if (i == 0) {
@@ -229,6 +236,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/tool")
+    @AllParamNotNull
     @AuthToken
     public ResponseTemplate<JSONObject> deleteTool(int toolId) {
         int i = toolService.deleteTool(toolId);
@@ -311,6 +319,7 @@ public class AdminController {
 
     @PostMapping("/sign-up-w")
     @AuthToken
+    @AllParamNotNull
     public ResponseTemplate<JSONObject> signUpWorker(
             String workId,
             String name,
@@ -429,6 +438,7 @@ public class AdminController {
 
     @PostMapping(value = "/massage", produces = "application/json;charset=utf-8")
     @AuthToken
+    @AllParamNotNull
     public String pushMassage(String workId, String massage) {
         // TODO: 等待实现
         return "{\n" +
