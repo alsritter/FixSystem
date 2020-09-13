@@ -89,7 +89,7 @@ localStorage.clear();
 
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
-| studentId 或者 workId | id   | 不能为空 |
+| id |  studentId 或者 workId  | 不能为空 |
 
 - 响应数据
 
@@ -163,7 +163,7 @@ localStorage.clear();
 | -------- | -------- | -------- |
 | uuid | 验证码的key   | 不能为空 |
 | codevalue | 验证码的值   | 不能为空 |
-| studentId | 学生 id   | 不能为空 |
+| id | 学生 id   | 不能为空 |
 | name | 名字   | 不能为空 |
 | password | 密码     | 不能为空 |
 | phone | 手机号     | 不能为空 |
