@@ -10,6 +10,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -92,7 +93,7 @@ public class GlobalExceptionHandler {
             response.setStatus(CommonEnum.FORBIDDEN.getResultCode());
             response.setContentType("application/json;charset=utf-8");
             jsonObject.put("code", CommonEnum.FORBIDDEN.getResultCode());
-            jsonObject.put("message", e.getMessage() + " 请求类型不符！");
+            jsonObject.put("message"," 请求类型不符！ 错误原因为：" + e.getMessage());
             out = response.getWriter();
             out.println(jsonObject);
         } finally {
@@ -116,7 +117,7 @@ public class GlobalExceptionHandler {
             response.setStatus(CommonEnum.BAD_REQUEST.getResultCode());
             response.setContentType("application/json;charset=utf-8");
             jsonObject.put("code", CommonEnum.BAD_REQUEST.getResultCode());
-            jsonObject.put("message", e.getMessage() + " 参数读取异常！");
+            jsonObject.put("message"," 参数读取异常！ 错误原因为：" + e.getMessage());
             out = response.getWriter();
             out.println(jsonObject);
         } finally {
@@ -140,7 +141,31 @@ public class GlobalExceptionHandler {
             response.setStatus(CommonEnum.BAD_REQUEST.getResultCode());
             response.setContentType("application/json;charset=utf-8");
             jsonObject.put("code", CommonEnum.BAD_REQUEST.getResultCode());
-            jsonObject.put("message", e.getMessage() + " 参数绑定异常！");
+            jsonObject.put("message","参数绑定异常！ 错误原因为：" + e.getMessage());
+            out = response.getWriter();
+            out.println(jsonObject);
+        } finally {
+            if (null != out) {
+                out.flush();
+                out.close();
+            }
+        }
+    }
+
+    /**
+     * 参数转换错误，因为 Spring 会自动把前端的请求参数转成对应的数据返回到形参上，所以当前端传入错误的参数过来转换不了就会报这个错
+     */
+    @ExceptionHandler(value = MethodArgumentTypeMismatchException.class)
+    public void exceptionHandler(HttpServletResponse response, MethodArgumentTypeMismatchException e) throws IOException {
+        log.error("参数转换错误，可能是传入的参数名和 value 位置写反了 访问的方法是：{}  参数名称为：{}", e.getParameter(), e.getName());
+        JSONObject jsonObject = new JSONObject();
+        PrintWriter out = null;
+        try {
+            //鉴权失败后返回的HTTP错误码，默认为401
+            response.setStatus(CommonEnum.BAD_REQUEST.getResultCode());
+            response.setContentType("application/json;charset=utf-8");
+            jsonObject.put("code", CommonEnum.BAD_REQUEST.getResultCode());
+            jsonObject.put("message", "参数转换错误！(可能是参数和 value 写反了)  错误的参数为：" + e.getName());
             out = response.getWriter();
             out.println(jsonObject);
         } finally {

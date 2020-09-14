@@ -30,5 +30,7 @@ public interface StudentMapper {
     @Update("update STUDENT_TB set name=#{name},phone=#{phone} where student_id = #{studentId}")
     int updateStudent(String studentId, String name, String phone);
 
-
+    @Result(column = "student_id", property = "id")
+    @Select("select * from STUDENT_TB")
+    List<Student> getStudentList();
 }

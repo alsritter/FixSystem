@@ -142,12 +142,8 @@ public class WorkerService {
         return worker;
     }
 
-    public List<Map<String,Object>> getFaultClassCount(String workId){
-        return workerMapper.getFaultClassCount(workId);
-    }
-
-    public List<Map<String,Object>> getToMonthOrders(String workId){
-        return workerMapper.getToMonthOrders(workId);
+    public List<Worker> getWorkerList() {
+        return workerMapper.getWorkerList();
     }
 }
 

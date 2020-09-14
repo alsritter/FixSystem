@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface OrderMapper {
 
@@ -77,4 +78,27 @@ public interface OrderMapper {
     @ResultMap("order")
     @Select("select * from ORDERS_TB where to_days(end_time) = to_days(now()) and  work_id = #{workId}")
     List<Orders> getTodayOrdersList(String workId);
+
+    @Select("select COUNT(*) as ordersNumber, state from ORDERS_TB group by state")
+    List<Map<String, Object>> getOrderClassNumber();
+
+    @Select("select COUNT(*) as number from ORDERS_TB")
+    int getOrderNumber();
+
+    // 参考自：https://blog.csdn.net/cangchen/article/details/44978531
+    @Select("SELECT end_time as date , grade\n" +
+            "FROM ORDERS_TB\n" +
+            "where DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(end_time) \n" +
+            "  and work_id=#{workId}")
+    List<Map<String,Object>> getToMonthOrdersInWorker(String workId);
+
+    @Select("SELECT end_time as date , grade FROM ORDERS_TB where DATE_SUB(CURDATE(), INTERVAL 30 DAY) <=date(end_time)")
+    List<Map<String,Object>> getToMonthOrders();
+
+    @Select("select fault_class as typeName, COUNT(fault_class) as number\n" +
+            "from ORDERS_TB\n" +
+            "where work_id = #{workId} and state = 2\n" +
+            "group by fault_class;")
+    List<Map<String,Object>> getFaultClassCount(String workId);
+
 }

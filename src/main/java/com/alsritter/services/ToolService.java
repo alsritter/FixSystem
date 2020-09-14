@@ -36,7 +36,7 @@ public class ToolService {
         try {
             i = toolMapper.createTool(toolName, toolCount);
         } catch (RuntimeException e) {
-            throw new MyDBError("更新管理员的数据出现问题", e);
+            throw new MyDBError("更新工具数据出错", e);
         }
         return i;
     }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -41,6 +42,10 @@ public class StudentService {
             throw new BizException(CommonEnum.NOT_FOUND);
         }
         return student;
+    }
+
+    public List<Student> getStudentList() {
+        return studentMapper.getStudentList();
     }
 
     public Student getStudent(String studentId) {

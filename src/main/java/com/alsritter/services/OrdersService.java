@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专门用来处理订单相关的数据
@@ -292,5 +293,25 @@ public class OrdersService {
 
     public List<Orders> getTodayOrdersList(String workId) {
         return orderMapper.getTodayOrdersList(workId);
+    }
+
+    public List<Map<String,Object>> getFaultClassCount(String workId){
+        return orderMapper.getFaultClassCount(workId);
+    }
+
+    public List<Map<String,Object>> getToMonthOrdersInWorker(String workId){
+        return orderMapper.getToMonthOrdersInWorker(workId);
+    }
+
+    public List<Map<String,Object>> getToMonthOrders(){
+        return orderMapper.getToMonthOrders();
+    }
+
+    public List<Map<String, Object>> getOrderClassNumber(){
+        return orderMapper.getOrderClassNumber();
+    }
+
+    public int getOrderNumber(){
+        return orderMapper.getOrderNumber();
     }
 }

@@ -5,6 +5,7 @@ import com.alsritter.model.ResponseTemplate;
 import com.alsritter.services.FaultService;
 import com.alsritter.services.UserService;
 import com.alsritter.utils.BizException;
+import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
 import com.google.code.kaptcha.Producer;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +63,6 @@ public class UtilsController {
     @GetMapping("/code")
     @AllParamNotNull
     public void getImageCode(HttpServletResponse response, String uuid) {
-        // TODO: 处理下报错，添加事务
         //禁止缓存
         response.setDateHeader("Expires", 0);
         response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
@@ -87,6 +87,7 @@ public class UtilsController {
             out.flush();
         } catch (Exception e) {
             log.warn(e.getMessage());
+            throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR.getResultCode(), "验证码生成错误");
         }
     }
 

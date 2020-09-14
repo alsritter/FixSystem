@@ -11,10 +11,10 @@ public interface ToolMapper {
     @Result(column = "tool_id", property = "toolId")
     @Result(column = "tool_name", property = "toolName")
     @Result(column = "tool_count", property = "toolCount")
-    @Select("select * from Tool_TB")
+    @Select("select * from TOOL_TB")
     List<Tool> getToolList();
 
-    @Update("update Tool_TB set tool_count = #{toolCount} where tool_id= #{toolId}")
+    @Update("update TOOL_TB set tool_count = #{toolCount} where tool_id= #{toolId}")
     int updateTool(int toolId,int toolCount);
 
     @Insert("insert into TOOL_TB (tool_name, tool_count) VALUE (#{toolName},#{toolCount})")
