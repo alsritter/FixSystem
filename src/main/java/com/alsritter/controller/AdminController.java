@@ -100,6 +100,27 @@ public class AdminController {
                 .build();
     }
 
+
+    // 取得自己
+    @GetMapping("/user")
+    @AuthToken
+    public ResponseTemplate<JSONObject> getSelf(HttpServletRequest request) {
+        Admin admin = adminService.getSelf(userService.getId(request));
+        JSONObject result = new JSONObject();
+        result.put("status", "获取成功");
+        result.put("id",admin.getId());
+        result.put("name",admin.getName());
+        result.put("gender",admin.getGender());
+        result.put("phone",admin.getPhone());
+        result.put("joinDate",admin.getJoinDate());
+        result.put("details",admin.getDetails());
+        return ResponseTemplate.<JSONObject>builder()
+                .code(200)
+                .message("获取成功")
+                .data(result)
+                .build();
+    }
+
     @GetMapping("/order-list")
     @AllParamNotNull
     @AuthToken

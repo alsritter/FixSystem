@@ -5,6 +5,7 @@ import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
 import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
+import com.alsritter.pojo.Admin;
 import com.alsritter.pojo.Message;
 import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Worker;
@@ -24,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -182,17 +184,35 @@ public class WorkerController {
     //工人主页
     @GetMapping("/home")
     @AuthToken
-    public ResponseTemplate<Worker> getWorkerHome(HttpServletRequest request) {
-        Worker workerHome = workerService.getWorkerHome(userService.getId(request));
-        if (workerHome == null) {
-            throw new BizException(CommonEnum.NOT_FOUND);
+    public ResponseTemplate<JSONObject> getWorker(HttpServletRequest request) {
+        String id = userService.getId(request);
+        Worker user = workerService.getWorker(id);
+        List<Map<String, Object>> faultClassCount = ordersService.getFaultClassCount(id);
+        List<Map<String, Object>> toMonthOrders = ordersService.getToMonthOrdersInWorker(id);
+        List<Orders> todayOrdersList = ordersService.getTodayOrdersList(id);
+        int ordersNumberToday = 0;
+        if (todayOrdersList != null) {
+            ordersNumberToday = todayOrdersList.size();
         }
 
-        return ResponseTemplate
-                .<Worker>builder()
-                .code(HttpServletResponse.SC_OK)
-                .message("维修工人主页")
-                .data(workerHome)
+
+        JSONObject result = new JSONObject();
+        result.put("workId", user.getId());
+        result.put("name", user.getName());
+        result.put("gender", user.getGender());
+        result.put("phone", user.getPhone());
+        result.put("joinDate", user.getJoinDate());
+        result.put("details", user.getDetails());
+        result.put("ordersNumber", user.getOrdersNumber());
+        result.put("avgGrade", user.getAvgGrade());
+        result.put("ordersNumberToday", ordersNumberToday);
+        result.put("type", faultClassCount);
+        result.put("thisMonth", toMonthOrders);
+
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.CREATED.getResultCode())
+                .message("工人详情页")
+                .data(result)
                 .build();
     }
 

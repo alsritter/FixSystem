@@ -117,6 +117,24 @@ public class StudentController {
         return login(codevalue, uuid, studentId, password);
     }
 
+    // 取得自己
+    @GetMapping("/user")
+    @AuthToken
+    public ResponseTemplate<JSONObject> getSelf(HttpServletRequest request) {
+        Student student = studentService.getStudent(userService.getId(request));
+        JSONObject result = new JSONObject();
+        result.put("status", "获取成功");
+        result.put("id",student.getId());
+        result.put("name",student.getName());
+        result.put("gender",student.getGender());
+        result.put("phone",student.getPhone());
+        return ResponseTemplate.<JSONObject>builder()
+                .code(200)
+                .message("获取成功")
+                .data(result)
+                .build();
+    }
+
     @PatchMapping("/user")
     @AllParamNotNull
     @AuthToken
@@ -279,7 +297,6 @@ public class StudentController {
                 .data(studentHistoryDetail)
                 .build();
     }
-
 
 
 }

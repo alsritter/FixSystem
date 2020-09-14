@@ -37,6 +37,15 @@ public class AdminService {
         return user;
     }
 
+    public Admin getSelf(String workId){
+        Admin user = adminMapper.getAdminSelf(workId);
+        if (user == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return user;
+    }
+
+
     @Transactional
     public int updateUser(String id,String phone, String gender){
         int i = 0;
