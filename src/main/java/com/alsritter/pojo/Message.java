@@ -9,6 +9,6 @@ import java.util.Date;
 public class Message {
     private String adminId;
     private Date createDate;
-    private long massageId;
+    private long messageId;
     private String messageStr;
 }

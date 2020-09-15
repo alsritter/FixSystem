@@ -41,6 +41,12 @@ public class ParamNotNullInterceptor implements HandlerInterceptor {
             for (Parameter parameter : parameters) {
                 String name = parameter.getName();
 
+                if (parameter.getType() != HttpServletResponse.class &&
+                        parameter.getType() != HttpServletRequest.class) {
+                    // 避免打印 HttpServletResponse 和 HttpServletRequest 影响观看
+                    log.debug("参数名为：{}  参数类型为：{} 参数的值为：{}", name, parameter.getType(), request.getParameter(name));
+                }
+
                 // 注意：一些非指定的参数需要屏蔽
                 if ((request.getParameter(name) == null ||
                         request.getParameter(name).isEmpty()) &&
@@ -49,7 +55,7 @@ public class ParamNotNullInterceptor implements HandlerInterceptor {
                 ) {
                     throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "请求参数不能为空！！");
                 }
-                log.debug("参数名为：{}  参数类型为：{} 参数的值为：{}", name, parameter.getType(), request.getParameter(name));
+
             }
             return true;
         }

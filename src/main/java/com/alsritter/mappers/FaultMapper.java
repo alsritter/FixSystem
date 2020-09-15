@@ -8,6 +8,6 @@ public interface FaultMapper {
     @Select("select * from FAULT_TB")
     List<String> getFaultClassList();
 
-    @Select("select * from FAULT_TB WHERE fault_class")
+    @Select("select * from FAULT_TB WHERE fault_class=#{faultName}")
     String isExist(String faultName);
 }

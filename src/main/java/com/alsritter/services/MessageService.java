@@ -20,10 +20,10 @@ public class MessageService {
     }
 
     @Transactional
-    public int pushMassage(String adminId,String massage){
+    public int pushMessage(String adminId,String message){
         int i = 0;
         try {
-            i = messageMapper.pushMassage(adminId, massage);
+            i = messageMapper.pushMessage(adminId, message);
         } catch (RuntimeException e) {
             throw new MyDBError("推送消息失败，失败原因：", e);
         }

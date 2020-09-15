@@ -26,9 +26,8 @@ public interface StudentMapper {
     @Select("select student_id from STUDENT_TB")
     List<String> getStudentIdList();
 
-
-    @Update("update STUDENT_TB set name=#{name},phone=#{phone} where student_id = #{studentId}")
-    int updateStudent(String studentId, String name, String phone);
+    @Update("update STUDENT_TB set name=#{name},phone=#{phone},gender=#{gender} where student_id = #{studentId}")
+    int updateStudent(String studentId, String gender ,String name, String phone);
 
     @Result(column = "student_id", property = "id")
     @Select("select * from STUDENT_TB")

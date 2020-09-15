@@ -18,14 +18,15 @@ public interface OrderMapper {
             @Result(column = "fault_detail", property = "faultDetail"),
             @Result(column = "work_id", property = "workId"),
             @Result(column = "admin_work_id", property = "adminWorkId"),
-            @Result(column = "result_details", property = "resultDetails")
+            @Result(column = "result_details", property = "resultDetails"),
+            @Result(column = "massage", property = "message")
     })
     @Select("select * from ORDERS_TB ;")
     List<Orders> getAllOrders();
 
     // 可以使用 @ResultMap 注解来复用上面的映射
     @ResultMap("order")
-    @Select("select * from ORDERS_TB where student_id = #{id} and (state in (0,1) or (state = 2 and massage is null))")
+    @Select("select * from ORDERS_TB where student_id = #{id} and state in (0,1)")
     List<Orders> getOrdersOfStudent(String id);
 
     @ResultMap("order")
@@ -54,8 +55,8 @@ public interface OrderMapper {
             "where fix_table_id= #{fixTableId}")
     int endOrder(long fixTableId, String resultDetails);
 
-    @Update("update ORDERS_TB set massage=#{massage}, grade=#{grade} where fix_table_id=#{fixTableId}")
-    int endOrderStudent(long fixTableId, String massage, double grade);
+    @Update("update ORDERS_TB set massage=#{message}, grade=#{grade} where fix_table_id=#{fixTableId}")
+    int endOrderStudent(long fixTableId, String message, double grade);
 
     @Delete("delete from ORDERS_TB where fix_table_id = #{fixTableId}")
     int deleteOrder(long fixTableId);

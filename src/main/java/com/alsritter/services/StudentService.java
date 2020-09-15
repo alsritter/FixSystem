@@ -93,10 +93,10 @@ public class StudentService {
     }
 
     @Transactional
-    public int updateStudent(String studentId, String name, String phone) {
+    public int updateStudent(String studentId, String gender, String name, String phone) {
         int i = 0;
         try {
-            i = studentMapper.updateStudent(studentId, name, phone);
+            i = studentMapper.updateStudent(studentId, gender ,name, phone);
         } catch (RuntimeException e) {
             throw new MyDBError("修改数据错误", e);
         }

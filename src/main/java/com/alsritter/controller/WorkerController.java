@@ -169,7 +169,7 @@ public class WorkerController {
     }
 
     // //工人消息中心
-    @GetMapping("/massage-list")
+    @GetMapping("/message-list")
     @AuthToken
     public ResponseTemplate<List<Message>> getMessageList(){
         List<Message> messageList = messageService.getMessageList();

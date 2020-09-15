@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 
 public interface MessageMapper {
-    @Result(column = "massage_id", property = "massageId")
+    @Result(column = "massage_id", property = "messageId")
     @Result(column = "work_id", property = "adminId")
     @Result(column = "create_date", property = "createDate")
     @Result(column = "massage", property = "messageStr")
@@ -16,6 +16,6 @@ public interface MessageMapper {
     List<Message> getMessageList();
 
 
-    @Insert("insert into Massage_TB(create_date, work_id, massage) VALUE(now(),#{adminId},#{massage})")
-    int pushMassage(String adminId,String massage);
+    @Insert("insert into Massage_TB(create_date, work_id, massage) VALUE(now(),#{adminId},#{message})")
+    int pushMessage(String adminId,String message);
 }

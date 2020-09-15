@@ -120,7 +120,7 @@ localStorage.clear();
 
 ## 学生页面
 
-### 登陆 👌
+### 登陆 👌 👌🏿
 
 - 请求路径：student/login
 - 请求方法：post
@@ -153,7 +153,7 @@ localStorage.clear();
 前端拿到数据之后存在 sessionStorage，以后之前读取这里面的东西就好了（注意 Token）
 
 
-### 注册 👌
+### 注册 👌 👌🏿
 
 - 请求路径：student/sign-up
 - 请求方法：post
@@ -189,7 +189,7 @@ localStorage.clear();
 
 后端注册成功后需要刷新 redis 缓存的数据
 
-### 获取个人资料 🔒 👌
+### 获取个人资料 🔒 👌 👌🏿
 - 请求路径：student/user
 - 请求方法：get
 - 响应数据
@@ -208,7 +208,7 @@ localStorage.clear();
 }
 ```
 
-### 修改个人页 🔒 👌
+### 修改个人页 🔒 👌 👌🏿
 
 - 请求路径：student/user
 - 请求方法：patch
@@ -216,6 +216,7 @@ localStorage.clear();
 
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
+| name | 名称     | 不能为空 |
 | phone | 手机号     | 不能为空 |
 | gender | 性别     | 不能为空 |
 
@@ -233,7 +234,7 @@ localStorage.clear();
 ```
 
 
-### 发起订单 🔒 👌
+### 发起订单 🔒 👌 👌🏿
 
 - 请求路径：student/order
 - 请求方法：post
@@ -261,7 +262,7 @@ localStorage.clear();
 
 contacts 和 studentPhone 为空时就默认填入当前账号的信息
 
-### 当前订单 🔒 👌
+### 当前订单 🔒 👌 👌🏿
 
 
 - 请求路径：student/order
@@ -288,7 +289,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
             "adminWorkId": "201835070344",
             "resultDetails": null,
             "grade": 10,
-            "massage": null,
+            "message": null,
             "state": 1
         },
         {
@@ -305,7 +306,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
             "adminWorkId": null,
             "resultDetails": null,
             "grade": 10,
-            "massage": null,
+            "message": null,
             "state": 0
         }
     ]
@@ -324,7 +325,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
 | fixTableId | 订单 id     | 不能为空，根据订单的 id 来查询 |
-| massage | 学生留言     | 可以为空|
+| message | 学生留言     | 可以为空|
 | grade | 学生打分     | 可以为空|
 
 - 响应数据
@@ -555,7 +556,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
             "adminWorkId": "201835070111",
             "resultDetails": null,
             "grade": 10,
-            "massage": null,
+            "message": null,
             "state": 1
         }
     ]
@@ -660,7 +661,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 
 ### 消息中心 🔒  👌
 
-- 请求路径：worker/massage-list
+- 请求路径：worker/message-list
 - 请求方法：get
 
 - 响应数据
@@ -671,16 +672,16 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
     "message": "消息中心",
     "data": [
         {
-            "massageId": 15,
+            "messageId": 15,
             "name": "发布者名字",
             "createDate": "2020-08-09T20:36:26.000Z",
-            "massage": "消息中心"
+            "message": "消息中心"
         },
         {
-            "massageId": 16,
+            "messageId": 16,
             "name": "发布者名字",
             "createDate": "2020-08-09T20:36:26.000Z",
-            "massage": "消息中心"
+            "message": "消息中心"
         }
     ]
 }
@@ -759,7 +760,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
             "adminWorkId": null,
             "resultDetails": null,
             "grade": 10,
-            "massage": null,
+            "message": null,
             "state": 0
         },
         {
@@ -776,7 +777,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
             "adminWorkId": "201835070111",
             "resultDetails": null,
             "grade": 10,
-            "massage": null,
+            "message": null,
             "state": 1
         },
         {
@@ -793,7 +794,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
             "adminWorkId": "201835070999",
             "resultDetails": "hsdhahsahdhasdhahsdahdhasdh",
             "grade": 9,
-            "massage": "jyhiuyiuyiuyiuyiuyi",
+            "message": "jyhiuyiuyiuyiuyiuyi",
             "state": 2
         }
     ]
@@ -837,7 +838,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
       "adminWorkId": null,
       "resultDetails": null,
       "grade": 10,
-      "massage": null,
+      "message": null,
       "state": 0
     }
 }
@@ -859,7 +860,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
         "adminWorkId": "201835070111",
         "resultDetails": null,
         "grade": 10,
-        "massage": null,
+        "message": null,
         "state": 1
     }
 }
@@ -883,7 +884,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
       "adminWorkId": "201835070344",
       "resultDetails": "dahjksgdhjiagsdhjgahjsdghjasdgj",
       "grade": 10,
-      "massage": "dhjagsjdhgajshdgad",
+      "message": "dhjagsjdhgajshdgad",
       "state": 2
     }
 }        
@@ -1023,7 +1024,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
     "code": 200,
     "message": "获取成功",
     "data": {
-        "workId": "20182507012912",
+        "id": "20182507012912",
         "gender": "男",
         "phone": "13128863338",
         "name": "张三",
@@ -1374,7 +1375,7 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 
 ### 获取消息列表 🔒 👌
 
-- 请求路径：admin/massage-list
+- 请求路径：admin/message-list
 - 请求方法：get
 
 - 响应数据
@@ -1387,13 +1388,13 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
         {
             "adminId": "201835070999",
             "createDate": 1600123224000,
-            "massageId": 1,
+            "messageId": 1,
             "messageStr": "今晚去吃烤肉吧"
         },
         {
             "adminId": "201835070999",
             "createDate": 1600036824000,
-            "massageId": 2,
+            "messageId": 2,
             "messageStr": "吃个屁！！！"
         }
     ]
@@ -1401,13 +1402,13 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 ```
 
 ### 发布消息 🔒 👌
-- 请求路径：admin/massage
+- 请求路径：admin/message
 - 请求方法：post
 - 请求参数
 
 | 参数名   | 参数说明 | 备注     |
 | -------- | -------- | -------- |
-| massage | 具体的内容    | 不能为空 |
+| message | 具体的内容    | 不能为空 |
 
 - 响应数据
 

@@ -132,7 +132,7 @@ public class OrdersService {
      * 如果能用该学生的 id 和该订单号找到
      * 数据表示该订单是由该工人处理
      * <p>
-     * 同时检查当前订单是否处于已经是 2 状态，且 Massage 为 null
+     * 同时检查当前订单是否处于已经是 2 状态，且 Message 为 null
      * 注意：是 Null 而不是 “空”
      * </b>
      * <br>
@@ -153,7 +153,7 @@ public class OrdersService {
         }
 
         // 最后判断当前订单没有评价过
-        if (exist.getMassage() != null) {
+        if (exist.getMessage() != null) {
             throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "当前订单已评价");
         }
 
@@ -196,12 +196,12 @@ public class OrdersService {
      * <br>
      *
      * @param fixTableId :
-     * @param massage    :
+     * @param message    :
      * @param grade      :
      * @return : int
      */
     @Transactional
-    public int endOrder(String id, long fixTableId, String massage, Integer grade) {
+    public int endOrder(String id, long fixTableId, String message, Integer grade) {
         // 先检查是否是当前工人处理的订单 和 判断当前订单是否是正在处理的 2（如果不行会自动抛出错误）
         Orders orders = isExistStudent(id, fixTableId);
         // 再取得当前订单的工人
@@ -218,7 +218,7 @@ public class OrdersService {
 
         int i = 0;
         try {
-            i = orderMapper.endOrderStudent(fixTableId, massage, newAvgGrade);
+            i = orderMapper.endOrderStudent(fixTableId, message, newAvgGrade);
         } catch (RuntimeException e) {
             throw new MyDBError("修改数据错误：", e);
         }

@@ -23,6 +23,6 @@ public class Orders {
   private String adminWorkId;
   private String resultDetails;
   private long grade;
-  private String massage;
+  private String message;
   private long state;
 }

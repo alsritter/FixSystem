@@ -419,7 +419,7 @@ public class AdminController {
     }
 
     // //工人消息中心
-    @GetMapping("/massage-list")
+    @GetMapping("/message-list")
     @AuthToken
     public ResponseTemplate<List<Message>> getMessageList(){
         List<Message> messageList = messageService.getMessageList();
@@ -431,12 +431,12 @@ public class AdminController {
                 .build();
     }
 
-    @PostMapping("/massage")
+    @PostMapping("/message")
     @AuthToken
     @AllParamNotNull
-    public ResponseTemplate<String> pushMassage(HttpServletRequest request,String massage) {
+    public ResponseTemplate<String> pushMessage(HttpServletRequest request,String message) {
         String id = userService.getId(request);
-        int i = messageService.pushMassage(id,massage);
+        int i = messageService.pushMessage(id,message);
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }

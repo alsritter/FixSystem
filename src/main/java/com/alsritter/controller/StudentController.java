@@ -119,6 +119,7 @@ public class StudentController {
 
     // 取得自己
     @GetMapping("/user")
+    @AllParamNotNull
     @AuthToken
     public ResponseTemplate<JSONObject> getSelf(HttpServletRequest request) {
         Student student = studentService.getStudent(userService.getId(request));
@@ -138,9 +139,9 @@ public class StudentController {
     @PatchMapping("/user")
     @AllParamNotNull
     @AuthToken
-    public ResponseTemplate<JSONObject> updateStudent(HttpServletRequest request, String name, String phone) {
+    public ResponseTemplate<JSONObject> updateStudent(HttpServletRequest request, String gender, String phone, String name) {
 
-        int i = studentService.updateStudent(userService.getId(request), name, phone);
+        int i = studentService.updateStudent(userService.getId(request),gender , name, phone);
         JSONObject result = new JSONObject();
 
         if (i == 0) {
@@ -229,11 +230,11 @@ public class StudentController {
     public ResponseTemplate<JSONObject> endOrder(
             HttpServletRequest request,
             long fixTableId,
-            String massage,
+            String message,
             Integer grade) {
         // resultDetails 可以为空
-        if (massage == null) {
-            massage = "";
+        if (message == null || message.isEmpty()) {
+            message = "学生未评价";
         }
 
         if (grade == null) {
@@ -244,7 +245,7 @@ public class StudentController {
             grade = 10;
         }
 
-        int i = ordersService.endOrder(userService.getId(request), fixTableId, massage, grade);
+        int i = ordersService.endOrder(userService.getId(request), fixTableId, message, grade);
         JSONObject result = new JSONObject();
 
         if (i == 0) {
@@ -263,26 +264,15 @@ public class StudentController {
     @GetMapping("/order-list")
     @AuthToken
     @AllParamNotNull
-    public ResponseTemplate<List<JSONObject>> getHistoryOrder(HttpServletRequest request) {
+    public ResponseTemplate<List<Orders>> getHistoryOrder(HttpServletRequest request) {
         // 获取当前学生 id
         String id = userService.getId(request);
         List<Orders> studentHistoryListDetail = ordersService.getStudentHistoryList(id);
-
-        List<JSONObject> jsonObjects = new ArrayList<>();
-        studentHistoryListDetail.forEach(x -> {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("fixTableId", x.getFixTableId());
-            jsonObject.put("faultClass", x.getFaultClass());
-            jsonObject.put("endTime", x.getEndTime());
-            jsonObject.put("grade", x.getGrade());
-            jsonObjects.add(jsonObject);
-        });
-
         return ResponseTemplate
-                .<List<JSONObject>>builder()
+                .<List<Orders>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message("历史订单")
-                .data(jsonObjects)
+                .data(studentHistoryListDetail)
                 .build();
     }
 
