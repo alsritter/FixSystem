@@ -60,6 +60,17 @@ public class WorkerService {
         return j;
     }
 
+    @Transactional
+    public int addOrderNumber(String workId) {
+        int j = 0;
+        try {
+            j = workerMapper.addOrderNumber(workId);
+        } catch (RuntimeException e) {
+            throw new MyDBError("添加订单错误", e);
+        }
+        return j;
+    }
+
     public Worker getWorker(String workId) {
         Worker worker = workerMapper.getWorker(workId);
         if (worker == null) {
@@ -144,6 +155,17 @@ public class WorkerService {
 
     public List<Worker> getWorkerList() {
         return workerMapper.getWorkerList();
+    }
+
+    @Transactional
+    public int setGrade(String workId, double newAvgGrade) {
+        int j = 0;
+        try {
+            j = workerMapper.setGrade(workId, newAvgGrade);
+        } catch (RuntimeException e) {
+            throw new MyDBError("修改新分数错误", e);
+        }
+        return j;
     }
 }
 

@@ -280,7 +280,7 @@ public class StudentController {
     @AuthToken
     @AllParamNotNull
     public ResponseTemplate<Orders> getHistoryOrderDetail(long fixTableId) {
-        Orders studentHistoryDetail = ordersService.getStudentHistoryDetail(fixTableId);
+        Orders studentHistoryDetail = ordersService.getOrder(fixTableId);
         return ResponseTemplate.<Orders>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message(CommonEnum.SUCCESS.getResultMsg())

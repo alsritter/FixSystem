@@ -113,7 +113,7 @@ public class WorkerController {
 
         // resultDetails 可以为空
         if (resultDetails == null) {
-            resultDetails = "";
+            resultDetails = "当前订单评价完成";
         }
 
         int i = ordersService.endOrder(fixTableId, resultDetails);
@@ -158,7 +158,7 @@ public class WorkerController {
     @AuthToken
     @AllParamNotNull
     public ResponseTemplate<Orders> getWorkerHistoryOrderDetail(long fixTableId) {
-        Orders workerHistoryDetail = ordersService.getWorkerHistoryDetail(fixTableId);
+        Orders workerHistoryDetail = ordersService.getOrder(fixTableId);
         return ResponseTemplate
                 .<Orders>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())

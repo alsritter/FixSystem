@@ -69,10 +69,6 @@ public interface OrderMapper {
     List<Orders> getStudentHistoryList(String studentId);
 
     @ResultMap("order")
-    @Select("select * from ORDERS_TB where fix_table_id=#{fixTableId}")
-    Orders getHistoryDetail(long fixTableId);
-
-    @ResultMap("order")
     @Select("select * from ORDERS_TB where state = 2 and work_id = #{workId};")
     List<Orders> getWorkerHistoryList(String workId);
 

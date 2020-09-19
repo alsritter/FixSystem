@@ -183,8 +183,9 @@ public class OrdersService {
         try {
             i = orderMapper.endOrder(fixTableId, resultDetails);
             workerService.setState(order.getWorkId(), 0);
+            workerService.addOrderNumber(order.getWorkId());
         } catch (RuntimeException e) {
-            throw new MyDBError("修改数据错误：", e);
+            throw new MyDBError("结束订单错误：", e);
         }
         return i;
     }
@@ -216,9 +217,15 @@ public class OrdersService {
 
         double newAvgGrade = ((avgGrade * ordersNumber) + grade) / (ordersNumber + 1);
 
+        try {
+            workerService.setGrade(worker.getId(),newAvgGrade);
+        } catch (RuntimeException e) {
+            throw new MyDBError("修改数据错误：", e);
+        }
+
         int i = 0;
         try {
-            i = orderMapper.endOrderStudent(fixTableId, message, newAvgGrade);
+            i = orderMapper.endOrderStudent(fixTableId, message, grade);
         } catch (RuntimeException e) {
             throw new MyDBError("修改数据错误：", e);
         }
@@ -267,28 +274,12 @@ public class OrdersService {
         return studentHistoryList;
     }
 
-    public Orders getStudentHistoryDetail(long fixTableId) {
-        Orders historyDetail = orderMapper.getHistoryDetail(fixTableId);
-        if (historyDetail == null) {
-            throw new BizException(CommonEnum.NOT_FOUND);
-        }
-        return historyDetail;
-    }
-
     public List<Orders> getWorkerHistoryList(String workId) {
         List<Orders> workerHistoryList = orderMapper.getWorkerHistoryList(workId);
         if (workerHistoryList == null) {
             throw new BizException(CommonEnum.NOT_FOUND);
         }
         return workerHistoryList;
-    }
-
-    public Orders getWorkerHistoryDetail(long fixTableId) {
-        Orders historyDetail = orderMapper.getHistoryDetail(fixTableId);
-        if (historyDetail == null) {
-            throw new BizException(CommonEnum.NOT_FOUND);
-        }
-        return historyDetail;
     }
 
     public List<Orders> getTodayOrdersList(String workId) {

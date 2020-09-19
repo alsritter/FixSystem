@@ -4,23 +4,22 @@ import com.alsritter.pojo.Worker;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.Map;
 
 public interface WorkerMapper {
 
 
     //工人登录
-    @Results(id = "worker",value = {
-            @Result(column = "WORK_ID",property = "id"),
-            @Result(column = "ORDERS_NUMBER",property = "ordersNumber"),
+    @Results(id = "worker", value = {
+            @Result(column = "WORK_ID", property = "id"),
+            @Result(column = "ORDERS_NUMBER", property = "ordersNumber"),
             @Result(column = "JOIN_DATE", property = "joinDate"),
             @Result(column = "AVG_GRADE", property = "avgGrade")
     })
     @Select("select * from WORKER_TB WHERE WORK_ID=#{workId} and PASSWORD=#{password}")
-    Worker loginWorker(String workId,String password);
+    Worker loginWorker(String workId, String password);
 
     @Update("update  WORKER_TB set NAME=#{name}, PHONE=#{phone} WHERE WORK_ID=#{workId}")
-    int updateWorker(String workId,String name,String phone);
+    int updateWorker(String workId, String name, String phone);
 
     // 用来把工人 id 更新到 redis
     @Select("select work_id from WORKER_TB")
@@ -48,4 +47,10 @@ public interface WorkerMapper {
     @ResultMap("worker")
     @Select("select * from WORKER_TB")
     List<Worker> getWorkerList();
+
+    @Update("update  WORKER_TB set AVG_GRADE=#{newAvgGrade} WHERE WORK_ID=#{workId}")
+    int setGrade(String workId, double newAvgGrade);
+
+    @Update("update  WORKER_TB set ORDERS_NUMBER=(ORDERS_NUMBER+1) WHERE WORK_ID=#{workId}")
+    int addOrderNumber(String workId);
 }
