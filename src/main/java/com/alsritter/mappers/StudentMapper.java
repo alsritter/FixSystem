@@ -32,4 +32,9 @@ public interface StudentMapper {
     @Result(column = "student_id", property = "id")
     @Select("select * from STUDENT_TB")
     List<Student> getStudentList();
+
+    @Result(column = "student_id", property = "id")
+    @Select("select * from STUDENT_TB\n" +
+            "where student_id like #{id};")
+    List<Student> searchStudent(String id);
 }

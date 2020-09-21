@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 @Service
@@ -84,7 +83,7 @@ public class WorkerService {
     }
 
     @Transactional
-    public int selectLeisureWorker(String adminId ,String workId, long fixTableId) {
+    public int selectLeisureWorker(String adminId, String workId, long fixTableId) {
         // 先判断当前工人是否处于工作状态
         Worker worker = workerMapper.getWorker(workId);
 
@@ -92,20 +91,20 @@ public class WorkerService {
             throw new BizException(CommonEnum.NOT_FOUND.getResultCode(), "找不到该工人！");
         }
         if (worker.getState() == 1) {
-            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(),"当前工人已经在工作了，请不要再压榨他了");
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "当前工人已经在工作了，请不要再压榨他了");
         }
 
         // 再判断当前选定的订单是否已经在处理了或者是历史订单
         Orders order = ordersService.getOrder(fixTableId);
         if (order.getState() != 0) {
-            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(),"当前订单已经被处理，或者这是历史订单");
+            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "当前订单已经被处理，或者这是历史订单");
         }
 
         int j = 0;
         try {
             // 这个只是用来修改工人状态的，并非修改订单的状态
             setState(workId, 1);
-            j = ordersService.setOrderWorker(adminId ,workId, fixTableId);
+            j = ordersService.setOrderWorker(adminId, workId, fixTableId);
         } catch (RuntimeException e) {
             throw new MyDBError("指定工作错误：", e);
         }
@@ -166,6 +165,15 @@ public class WorkerService {
             throw new MyDBError("修改新分数错误", e);
         }
         return j;
+    }
+
+    public List<Worker> searchWorker(String id) {
+        if (id == null || id.isEmpty()) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "关键字不能为空！");
+        }
+        // 拼接关键字，使之能模糊查询
+        id = "%" + id + "%";
+        return workerMapper.searchWorker(id);
     }
 }
 

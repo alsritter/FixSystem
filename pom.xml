@@ -13,7 +13,7 @@
 
     <groupId>com.alsritter</groupId>
     <artifactId>FixSystem</artifactId>
-    <version>3.4.1-SNAPSHOT</version>
+    <version>3.4.5-SNAPSHOT</version>
     <name>FixSystem</name>
     <description>学校报修系统</description>
 

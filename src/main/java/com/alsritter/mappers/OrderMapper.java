@@ -98,4 +98,13 @@ public interface OrderMapper {
             "group by fault_class;")
     List<Map<String,Object>> getFaultClassCount(String workId);
 
+    @ResultMap("order")
+    @Select("select * from ORDERS_TB\n" +
+            "where fault_detail like #{word} or\n" +
+            "      fault_class like #{word} or\n" +
+            "      massage like #{word} or\n" +
+            "      result_details like #{word} or\n" +
+            "      contacts like #{word};")
+    List<Orders> searchOrder(String word);
+
 }

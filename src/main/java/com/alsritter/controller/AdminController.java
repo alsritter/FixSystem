@@ -202,9 +202,9 @@ public class AdminController {
     @PatchMapping("/user")
     @AuthToken
     @AllParamNotNull
-    public ResponseTemplate<JSONObject> updateUser(HttpServletRequest request, String phone, String gender) {
+    public ResponseTemplate<JSONObject> updateUser(HttpServletRequest request, String phone, String gender, String name, String details) {
         String id = userService.getId(request);
-        int i = adminService.updateUser(id, phone, gender);
+        int i = adminService.updateUser(id, phone, gender, name, details);
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }
@@ -446,6 +446,45 @@ public class AdminController {
                 .code(CommonEnum.CREATED.getResultCode())
                 .message("推送消息成功")
                 .data("推送消息成功")
+                .build();
+    }
+
+    @GetMapping("/search-order")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<List<Orders>> searchOrder(String word) {
+        List<Orders> orders = ordersService.searchOrder(word);
+        return ResponseTemplate
+                .<List<Orders>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("搜索成功")
+                .data(orders)
+                .build();
+    }
+
+    @GetMapping("/search-worker")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<List<Worker>> searchWorker(String id) {
+        List<Worker> orders = workerService.searchWorker(id);
+        return ResponseTemplate
+                .<List<Worker>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("搜索成功")
+                .data(orders)
+                .build();
+    }
+
+    @GetMapping("/search-student")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<List<Student>> searchStudent(String id) {
+        List<Student> orders = studentService.searchStudent(id);
+        return ResponseTemplate
+                .<List<Student>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("搜索成功")
+                .data(orders)
                 .build();
     }
 }

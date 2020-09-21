@@ -23,6 +23,6 @@ public interface AdminMapper {
     @Select("select work_id from ADMIN_TB")
     List<String> getWorkerIdList();
 
-    @Update("update  ADMIN_TB set phone=#{phone}, gender=#{gender} WHERE work_id=#{id}")
-    int updateUser(String id,String phone, String gender);
+    @Update("update  ADMIN_TB set phone=#{phone}, gender=#{gender} , name=#{name} ,details=#{details} WHERE work_id=#{id}")
+    int updateUser(String id,String phone, String gender, String name, String details);
 }

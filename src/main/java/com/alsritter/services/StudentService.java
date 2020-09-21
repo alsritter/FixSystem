@@ -102,5 +102,14 @@ public class StudentService {
         }
         return i;
     }
+
+    public List<Student> searchStudent(String id) {
+        if (id == null || id.isEmpty()) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "关键字不能为空！");
+        }
+        // 拼接关键字，使之能模糊查询
+        id = "%" + id + "%";
+        return studentMapper.searchStudent(id);
+    }
 }
 

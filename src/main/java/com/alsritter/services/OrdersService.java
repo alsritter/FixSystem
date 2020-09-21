@@ -305,4 +305,15 @@ public class OrdersService {
     public int getOrderNumber(){
         return orderMapper.getOrderNumber();
     }
+
+    public List<Orders> searchOrder(String word){
+        if (word == null || word.isEmpty()) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(),"关键字不能为空！");
+        }
+        // 拼接关键字，使之能模糊查询
+        word = "%" + word + "%";
+        return orderMapper.searchOrder(word);
+    }
+
+
 }

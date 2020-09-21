@@ -748,7 +748,173 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 }
 ```
 
+### 搜索订单 🔒
+- 请求路径：admin/search-order
+- 请求方法：get
+- 请求参数
 
+| 参数名   | 参数说明 | 备注     |
+| -------- | -------- | -------- |
+| word | 关键字   | 不能为空 |
+
+- 响应数据
+
+```json
+{
+    "code": 200,
+    "message": "搜索成功",
+    "data": [
+        {
+            "fixTableId": 17,
+            "studentId": "201825070131",
+            "contacts": "阿巴阿巴",
+            "address": "15 栋 611",
+            "createdTime": 1599180398000,
+            "endTime": null,
+            "phone": "13128888888",
+            "faultClass": "中央空调",
+            "faultDetail": "空调坏了",
+            "workId": null,
+            "adminWorkId": null,
+            "resultDetails": null,
+            "grade": 10,
+            "message": null,
+            "state": 0
+        },
+        {
+            "fixTableId": 21,
+            "studentId": "201825070133",
+            "contacts": "张三",
+            "address": "15 栋 611",
+            "createdTime": 1596501998000,
+            "endTime": null,
+            "phone": "13128888888",
+            "faultClass": "中央空调",
+            "faultDetail": "空调坏了",
+            "workId": "201895070111",
+            "adminWorkId": "201835070111",
+            "resultDetails": null,
+            "grade": 10,
+            "message": null,
+            "state": 1
+        }
+    ]
+}
+```
+
+### 搜索学生 🔒
+- 请求路径：admin/search-student
+- 请求方法：get
+- 请求参数
+
+| 参数名   | 参数说明 | 备注     |
+| -------- | -------- | -------- |
+| id | 关键字   | 不能为空 |
+
+- 响应数据
+
+```json
+{
+    "code": 200,
+    "message": "搜索成功",
+    "data": [
+        {
+            "id": "201825070134",
+            "name": "小刚",
+            "gender": "男",
+            "password": "sasdasd0",
+            "phone": "13128877777"
+        }
+    ]
+}
+```
+
+### 搜索工人 🔒
+- 请求路径：admin/search-worker
+- 请求方法：get
+- 请求参数
+
+| 参数名   | 参数说明 | 备注     |
+| -------- | -------- | -------- |
+| id | 关键字   | 不能为空 |
+
+- 响应数据
+
+```json
+{
+    "code": 200,
+    "message": "搜索成功",
+    "data": [
+        {
+            "id": "201895070322",
+            "name": "李四丰",
+            "gender": "男",
+            "password": "1ss211s234",
+            "joinDate": 1596258000000,
+            "phone": "13128834248",
+            "details": "俺就是个小透明",
+            "ordersNumber": 0,
+            "avgGrade": 10.0,
+            "state": 0
+        }
+    ]
+}
+```
+
+
+### 搜索订单 🔒
+- 请求路径：admin/search-worker
+- 请求方法：get
+- 请求参数
+
+| 参数名   | 参数说明 | 备注     |
+| -------- | -------- | -------- |
+| id | 关键字   | 不能为空 |
+
+- 响应数据
+
+```json
+{
+    "code": 201,
+    "message": "搜索成功",
+    "data": [
+        {
+            "fixTableId": 17,
+            "studentId": "201825070131",
+            "contacts": "阿巴阿巴",
+            "address": "15 栋 611",
+            "createdTime": 1599180398000,
+            "endTime": null,
+            "phone": "13128888888",
+            "faultClass": "中央空调",
+            "faultDetail": "空调坏了",
+            "workId": null,
+            "adminWorkId": null,
+            "resultDetails": null,
+            "grade": 10,
+            "message": null,
+            "state": 0
+        },
+        {
+            "fixTableId": 21,
+            "studentId": "201825070133",
+            "contacts": "张三",
+            "address": "15 栋 611",
+            "createdTime": 1596501998000,
+            "endTime": null,
+            "phone": "13128888888",
+            "faultClass": "中央空调",
+            "faultDetail": "空调坏了",
+            "workId": "201895070111",
+            "adminWorkId": "201835070111",
+            "resultDetails": null,
+            "grade": 10,
+            "message": null,
+            "state": 1
+        }
+    ]
+}
+```
 
 ### 获取订单 List 🔒 👌 👌🏿
 
@@ -1014,7 +1180,8 @@ contacts 和 studentPhone 为空时就默认填入当前账号的信息
 | -------- | -------- | -------- |
 | phone | 手机号     | 不能为空 |
 | gender | 性别     | 不能为空 |
-
+| name | 姓名     | 不能为空 |
+| details | 个人资料详情 | 不能为空 |
 
 - 响应数据
 

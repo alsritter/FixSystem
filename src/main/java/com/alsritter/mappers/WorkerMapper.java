@@ -53,4 +53,9 @@ public interface WorkerMapper {
 
     @Update("update  WORKER_TB set ORDERS_NUMBER=(ORDERS_NUMBER+1) WHERE WORK_ID=#{workId}")
     int addOrderNumber(String workId);
+
+    @ResultMap("worker")
+    @Select("select * from WORKER_TB\n" +
+            "where WORK_ID like #{id};")
+    List<Worker> searchWorker(String id);
 }

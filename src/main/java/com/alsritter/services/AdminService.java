@@ -46,10 +46,10 @@ public class AdminService {
     }
 
     @Transactional
-    public int updateUser(String id,String phone, String gender){
+    public int updateUser(String id,String phone, String gender, String name, String details){
         int i = 0;
         try {
-            i = adminMapper.updateUser(id, phone, gender);
+            i = adminMapper.updateUser(id, phone, gender,name ,details);
         } catch (RuntimeException e) {
             throw new MyDBError("更新管理员的数据出现问题", e);
         }
