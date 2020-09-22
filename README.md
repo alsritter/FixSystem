@@ -1,47 +1,32 @@
 # 校园智能报修系统
 ![image.png](https://i.loli.net/2020/09/19/eHwZklO6ao5Qm3y.png)
-
 ## FixSystem 是什么？😀
 
 **FixSystem 是一个前后端分离的智能报修系统**
 
 随着高校信息化的快速发展，智慧化校园已是校园信息化的必然发展趋势。维修管理已作为数字化后勤、智慧化勤的一部分，不可缺少。所以 **FixSystem** 是一套专注于校园报修的工具系统，**FixSystem** 管理端采用 B/S 架构、客户端（学生端、维修工人）使用 app 来登陆报修以及处理日常业务
 
+项目演示视频：[点击这里](https://www.bilibili.com/video/BV1Qp4y1e7Zz)
+项目地址：[点击这里](https://gitee.com/KUJOUN/fix-system-web)
+
 > 管理端页面
 ![GIF.gif](https://i.loli.net/2020/09/19/4TjwSvyaObZkgQ6.gif)
 ![image.png](https://i.loli.net/2020/09/19/oQB7HNGlkqFEdtM.png)
 
 > 学生端、维修工页面
-![20200919204121.png](https://i.loli.net/2020/09/19/LjrwF3c1hnTOaiP.png)
-![20200919205418.png](https://i.loli.net/2020/09/19/A5CNrUo98QXBFIs.png)
+![20200922223611.jpg](https://i.loli.net/2020/09/22/LvwH3NZBSk7JpKC.jpg)
+![20200922223618.jpg](https://i.loli.net/2020/09/22/Tudt1zqsCw6phPf.jpg)
 
 ### 在线演示地址 👀
 
 > **管理员端** 👨‍💼
 在线演示地址：[管理员端在线演示](http://alsritter.gitee.io/fix-system-page/#/)
-⚠️ 注意：请使用电脑打开，未做移动端适配，不支持 IE、最好使用 chrome 浏览器打开
+⚠️ 注意：因为管理端未做移动端适配，所以请使用电脑打开（不支持 IE、最好使用 chrome 浏览器打开）
 
 
 
 > **学生和工人端** 👨‍🔧 🤵
 APP 下载地址：[点击下载](https://gitee.com/alsritter/fix-system-app/attach_files/481253/download)
-
-
-
-### 开发环境 🌟
-
-FixSystem 后端采用的是 Java 语言开发，使用的是 SpringBoot 框架，采用 Restful API 的形式与前端交互，使用 Mybatis 来处理持久层，采用 Redis 来做缓存数据库，登陆鉴权则是采用 Redis + Token 的形式。
-* SpringBoot
-* mybatis
-* redis
-* docker
-
-FixSystem 前端采用的是 Vue + ElementUI + ECharts 开发
-* vue-cli
-* ElementUI
-* less
-* ECharts
-
 
 
 
@@ -52,8 +37,30 @@ FixSystem 前端采用的是 Vue + ElementUI + ECharts 开发
 * [管理端项目](https://gitee.com/KUJOUN/fix-system-web)
 
 
+
+
+### 开发环境 🌟
+
+FixSystem **后端** 采用的是 Java 语言开发，使用的是 SpringBoot 框架，采用 Restful API 的形式与前端交互，使用 Mybatis 来处理持久层，采用 Redis 来做缓存数据库，登陆鉴权则是采用 Redis + Token 的形式。
+
+
+FixSystem **前端** 采用的是 Vue + ElementUI + ECharts 开发
+
+前端技术 | 后端技术
+------- | -------
+Vue-cli | SpringBoot
+Axios | SpringMVC
+ElementUI | MyBatis
+Less | Redis
+ECharts | Docker
+
+
+
 ### API 文档
 因为项目是前后端分离的，所以是通过 ajax 进行交互，具体的 api 文档参见：[API 文档](https://gitee.com/alsritter/fix-system/blob/master/api%20%E6%96%87%E6%A1%A3.md)
+
+部分 API 展示：
+![image.png](https://i.loli.net/2020/09/22/je7NW8h3fmC1iqF.png)![image.png](https://i.loli.net/2020/09/22/eOnKDRmIZ1TPoEg.png)
 
 ### 系统架构 👨🏻‍💻 
 ![image.png](https://i.loli.net/2020/09/19/KqawBVUztelTkh2.png)
@@ -63,6 +70,7 @@ FixSystem 前端采用的是 Vue + ElementUI + ECharts 开发
 
 
 ### 管理员端功能 👨‍💼
+[![wXaTyT.md.png](https://s1.ax1x.com/2020/09/22/wXaTyT.md.png)](https://imgchr.com/i/wXaTyT)
 
 >  web端订单功能
 
@@ -115,6 +123,7 @@ FixSystem 前端采用的是 Vue + ElementUI + ECharts 开发
 * 点击放弃则会返回到订单界面
 
 ### 学生端功能 👨‍🎓
+![image.png](https://i.loli.net/2020/09/22/TQJSMtiGID2Cjdv.png)
 
 > 学生端注册
 
@@ -144,6 +153,7 @@ FixSystem 前端采用的是 Vue + ElementUI + ECharts 开发
 
 
 ### 工人端功能 👨‍🔧
+![image.png](https://i.loli.net/2020/09/22/ckvoIs59AXnfBUF.png)
 
 > 工人端个人中心
 
@@ -265,6 +275,3 @@ SOFTWARE.
 <br>
 
 **指导老师**： **廖伟国**
-
-在项目中为我们提供了许多意见和技术支持
-对待学生认真耐心真诚，是一名非常好的老师
