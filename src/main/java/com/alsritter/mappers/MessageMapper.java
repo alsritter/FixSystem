@@ -18,4 +18,11 @@ public interface MessageMapper {
 
     @Insert("insert into Massage_TB(create_date, work_id, massage) VALUE(now(),#{adminId},#{message})")
     int pushMessage(String adminId,String message);
+
+    @Result(column = "massage_id", property = "messageId")
+    @Result(column = "work_id", property = "adminId")
+    @Result(column = "create_date", property = "createDate")
+    @Result(column = "massage", property = "messageStr")
+    @Select("select * from Massage_TB where massage_id=#{messageId}")
+    Message getMessage(long messageId);
 }

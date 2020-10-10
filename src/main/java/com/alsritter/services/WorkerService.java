@@ -114,32 +114,32 @@ public class WorkerService {
     // 注册成功需要更新一下 redis 的数据
     // 别忘了要配置事务
     @Transactional
-    public int signUpStudent(String workId, String name, String password, String phone, String gender, String details) {
+    public int signUpStudent(Worker worker) {
         //验证工号格式是否正确(只能是数字和 "-")
-        if (!Pattern.compile("^-?\\d+(\\.\\d+)?$").matcher(workId).matches()) {
+        if (!Pattern.compile("^-?\\d+(\\.\\d+)?$").matcher(worker.getId()).matches()) {
             throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "工号格式错误");
         }
 
         //检验是否已经有这个工人
-        if (userService.isExistRedis(workId)) {
+        if (userService.isExistRedis(worker.getId())) {
             throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "工人已经存在");
         }
 
         //验证手机号码正确性
         String regex = "^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$";
-        if (!Pattern.compile(regex).matcher(phone).matches()) {
+        if (!Pattern.compile(regex).matcher(worker.getPhone()).matches()) {
             throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "手机号错误");
         }
 
         int i = 0;
         try {
-            i = workerMapper.signUpStudent(workId, name, password, phone, gender, details);
+            i = workerMapper.signUpStudent(worker);
         } catch (RuntimeException e) {
             throw new MyDBError("可能是插入重复的数据(例如主键冲突)了", e);
         }
         // 插入数据后再更新 redis
         if (i != 0) {
-            stringTemplate.opsForSet().add(ConstantKit.USER_ID_LIST, workId);
+            stringTemplate.opsForSet().add(ConstantKit.USER_ID_LIST, worker.getId());
         }
         return i;
     }
@@ -174,6 +174,10 @@ public class WorkerService {
         // 拼接关键字，使之能模糊查询
         id = "%" + id + "%";
         return workerMapper.searchWorker(id);
+    }
+
+    public int getCount() {
+        return workerMapper.getCount();
     }
 }
 

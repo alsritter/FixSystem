@@ -37,4 +37,7 @@ public interface StudentMapper {
     @Select("select * from STUDENT_TB\n" +
             "where student_id like #{id};")
     List<Student> searchStudent(String id);
+
+    @Select("select COUNT(*) from STUDENT_TB;")
+    int getCount();
 }

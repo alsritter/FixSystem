@@ -19,7 +19,8 @@ public interface OrderMapper {
             @Result(column = "work_id", property = "workId"),
             @Result(column = "admin_work_id", property = "adminWorkId"),
             @Result(column = "result_details", property = "resultDetails"),
-            @Result(column = "massage", property = "message")
+            @Result(column = "massage", property = "message"),
+            @Result(column = "photo_url", property = "urls")
     })
     @Select("select * from ORDERS_TB ;")
     List<Orders> getAllOrders();
@@ -45,9 +46,9 @@ public interface OrderMapper {
     @Select("select * from ORDERS_TB where fix_table_id=#{fixTableId} and student_id=#{studentId};")
     Orders isExistStudent(String studentId, long fixTableId);
 
-    @Insert("insert into ORDERS_TB (student_id, contacts, create_time, address, phone, fault_class, fault_detail)\n" +
-            "values (#{studentId},#{contacts}, now(), #{address}, #{phone}, #{faultClass}, #{faultDetails})")
-    int createOrder(String studentId, String contacts, String phone, String faultClass, String address, String faultDetails);
+    @Insert("insert into ORDERS_TB (student_id, contacts, create_time, address, phone, fault_class, fault_detail, photo_url)\n" +
+            "values (#{studentId},#{contacts}, now(), #{address}, #{phone}, #{faultClass}, #{faultDetails}, #{urls})")
+    int createOrder(String studentId, String contacts, String phone, String faultClass, String address, String faultDetails, String urls);
 
 
     @Update("update ORDERS_TB set " +
@@ -107,4 +108,9 @@ public interface OrderMapper {
             "      contacts like #{word};")
     List<Orders> searchOrder(String word);
 
+    @Select("select COUNT(*) as number from ORDERS_TB where state = 2;")
+    int getEndOrderCount();
+
+    @Select("select COUNT(*) as number from ORDERS_TB where state = 0;")
+    int getWaitOrderCount();
 }

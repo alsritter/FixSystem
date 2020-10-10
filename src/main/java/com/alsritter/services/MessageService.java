@@ -2,6 +2,8 @@ package com.alsritter.services;
 
 import com.alsritter.mappers.MessageMapper;
 import com.alsritter.pojo.Message;
+import com.alsritter.utils.BizException;
+import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.MyDBError;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,5 +30,13 @@ public class MessageService {
             throw new MyDBError("推送消息失败，失败原因：", e);
         }
         return i;
+    }
+
+    public Message getMessage(long messageId) {
+        Message message = messageMapper.getMessage(messageId);
+        if (message == null) {
+            throw new BizException(CommonEnum.NOT_FOUND);
+        }
+        return message;
     }
 }

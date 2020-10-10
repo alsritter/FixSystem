@@ -24,5 +24,6 @@ public class Orders {
   private String resultDetails;
   private long grade;
   private String message;
+  private String urls;
   private long state;
 }

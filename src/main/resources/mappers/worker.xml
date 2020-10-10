@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alsritter.mappers.WorkerMapper">
+    <insert id="signUpStudent" parameterType="Worker">
+        insert into my_fix_system.WORKER_TB
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            WORK_ID,
+            NAME,
+            GENDER,
+            PASSWORD,
+            PHONE,
+            JOIN_DATE,
+            DETAILS,
+            <if test="address != null">
+                address,
+            </if>
+            <if test="department != null">
+                department,
+            </if>
+            <if test="email != null">
+                email,
+            </if>
+            <if test="place != null">
+                place,
+            </if>
+            <if test="idnumber != null">
+                idnumber,
+            </if>
+            <if test="ground != null">
+                ground,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id},#{name},#{gender},#{password},#{phone}, NOW(),#{details},
+            <if test="address != null">
+                #{address},
+            </if>
+            <if test="department != null">
+                #{department},
+            </if>
+            <if test="email != null">
+                #{email},
+            </if>
+            <if test="place != null">
+                #{place},
+            </if>
+            <if test="idnumber != null">
+                #{idnumber},
+            </if>
+            <if test="ground != null">
+                #{ground}
+            </if>
+        </trim>
+    </insert>
+</mapper>

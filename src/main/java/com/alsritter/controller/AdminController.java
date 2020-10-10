@@ -3,6 +3,7 @@ package com.alsritter.controller;
 import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
+import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.*;
 import com.alsritter.services.*;
@@ -108,12 +109,12 @@ public class AdminController {
         Admin admin = adminService.getSelf(userService.getId(request));
         JSONObject result = new JSONObject();
         result.put("status", "获取成功");
-        result.put("id",admin.getId());
-        result.put("name",admin.getName());
-        result.put("gender",admin.getGender());
-        result.put("phone",admin.getPhone());
-        result.put("joinDate",admin.getJoinDate());
-        result.put("details",admin.getDetails());
+        result.put("id", admin.getId());
+        result.put("name", admin.getName());
+        result.put("gender", admin.getGender());
+        result.put("phone", admin.getPhone());
+        result.put("joinDate", admin.getJoinDate());
+        result.put("details", admin.getDetails());
         return ResponseTemplate.<JSONObject>builder()
                 .code(200)
                 .message("获取成功")
@@ -199,12 +200,25 @@ public class AdminController {
                 .build();
     }
 
+    // 这个可以不做强要求（除了名字用来占位）
     @PatchMapping("/user")
     @AuthToken
-    @AllParamNotNull
-    public ResponseTemplate<JSONObject> updateUser(HttpServletRequest request, String phone, String gender, String name, String details) {
+    @ParamNotNull(params = {"name"})
+    public ResponseTemplate<JSONObject> updateUser(
+            HttpServletRequest request,
+            String phone,
+            String gender,
+            String name,
+            String details,
+            String address,
+            String department,
+            String email,
+            String place,
+            String ground,
+            String idnumber
+    ) {
         String id = userService.getId(request);
-        int i = adminService.updateUser(id, phone, gender, name, details);
+        int i = adminService.updateUser(new Admin(address, department, email, place, idnumber, ground, id, name, gender, null, null, phone, details));
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }
@@ -283,7 +297,7 @@ public class AdminController {
         List<JSONObject> jsonObjectList = new ArrayList<>();
         for (Student student : studentList) {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("studentId",student.getId());
+            jsonObject.put("studentId", student.getId());
             jsonObject.put("name", student.getName());
             jsonObject.put("gender", student.getGender());
             jsonObject.put("phone", student.getPhone());
@@ -302,11 +316,11 @@ public class AdminController {
     @GetMapping("/worker-list")
     @AuthToken
     public ResponseTemplate<List<JSONObject>> getWorkerList() {
-        List<Worker> workersList =  workerService.getWorkerList();
+        List<Worker> workersList = workerService.getWorkerList();
         List<JSONObject> jsonObjectList = new ArrayList<>();
         for (Worker worker : workersList) {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("workId",worker.getId());
+            jsonObject.put("workId", worker.getId());
             jsonObject.put("name", worker.getName());
             jsonObject.put("gender", worker.getGender());
             jsonObject.put("phone", worker.getPhone());
@@ -329,19 +343,42 @@ public class AdminController {
 
     @PostMapping("/sign-up-w")
     @AuthToken
-    @AllParamNotNull
+    @ParamNotNull(params = {"workId","name","password","phone","gender"})
     public ResponseTemplate<JSONObject> signUpWorker(
             String workId,
             String name,
             String password,
             String phone,
             String gender,
-            String details
+            String details,
+            String address,
+            String department,
+            String email,
+            String place,
+            String ground,
+            String idnumber
     ) {
         int i = 0;
         try {
             // 在 Controller 里处理错误，而非在 Service
-            i = workerService.signUpStudent(workId, name, password, phone, gender, details);
+            i = workerService.signUpStudent(new Worker(
+                    address,
+                    department,
+                    email,
+                    place,
+                    idnumber,
+                    ground,
+                    workId,
+                    name,
+                    gender,
+                    password,
+                    null,
+                    phone,
+                    details,
+                    0L,
+                    0.0,
+                    0
+            ));
         } catch (RuntimeException e) {
             log.warn(e.getMessage());
         }
@@ -400,12 +437,12 @@ public class AdminController {
         int orderNumber = ordersService.getOrderNumber();
         JSONObject result = new JSONObject();
         result.put("ordersNumber", orderNumber);
-        orderClassNumber.forEach(o ->{
-            if ((int)o.get("state") == 0) {
+        orderClassNumber.forEach(o -> {
+            if ((int) o.get("state") == 0) {
                 result.put("ordersNumber_0", o.get("ordersNumber"));
-            }else if((int)o.get("state") == 1) {
+            } else if ((int) o.get("state") == 1) {
                 result.put("ordersNumber_1", o.get("ordersNumber"));
-            }else if((int)o.get("state") == 2) {
+            } else if ((int) o.get("state") == 2) {
                 result.put("ordersNumber_2", o.get("ordersNumber"));
             }
         });
@@ -421,8 +458,17 @@ public class AdminController {
     // //工人消息中心
     @GetMapping("/message-list")
     @AuthToken
-    public ResponseTemplate<List<Message>> getMessageList(){
+    public ResponseTemplate<List<Message>> getMessageList() {
         List<Message> messageList = messageService.getMessageList();
+
+        // 为了防止数据过大，这里大于 50 个字的则自动省略
+
+        messageList.forEach(x -> {
+            if (x.getMessageStr().length() > 50) {
+                x.setMessageStr(x.getMessageStr().substring(0, 50) + "...");
+            }
+        });
+
         return ResponseTemplate
                 .<List<Message>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
@@ -431,12 +477,25 @@ public class AdminController {
                 .build();
     }
 
+    @GetMapping("/message")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<Message> getMessage(long messageId) {
+        Message message = messageService.getMessage(messageId);
+        return ResponseTemplate
+                .<Message>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("消息")
+                .data(message)
+                .build();
+    }
+
     @PostMapping("/message")
     @AuthToken
     @AllParamNotNull
-    public ResponseTemplate<String> pushMessage(HttpServletRequest request,String message) {
+    public ResponseTemplate<String> pushMessage(HttpServletRequest request, String message) {
         String id = userService.getId(request);
-        int i = messageService.pushMessage(id,message);
+        int i = messageService.pushMessage(id, message);
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }

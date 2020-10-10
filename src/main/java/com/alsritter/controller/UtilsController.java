@@ -2,16 +2,15 @@ package com.alsritter.controller;
 
 import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.model.ResponseTemplate;
-import com.alsritter.services.FaultService;
-import com.alsritter.services.UserService;
+import com.alsritter.services.*;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
 import com.google.code.kaptcha.Producer;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,6 +35,23 @@ public class UtilsController {
     private Producer captchaProducer;
 
     private FaultService faultService;
+    private UserService userService;
+    private StudentService studentService;
+    private OrdersService ordersService;
+    private WorkerService workerService;
+
+    @Resource
+    StringRedisTemplate stringTemplate;
+
+    @Autowired
+    public void setWorkerService(WorkerService workerService) {
+        this.workerService = workerService;
+    }
+
+    @Autowired
+    public void setOrdersService(OrdersService ordersService) {
+        this.ordersService = ordersService;
+    }
 
     @Autowired
     public void setFaultService(FaultService faultService) {
@@ -47,10 +63,10 @@ public class UtilsController {
         this.captchaProducer = captchaProducer;
     }
 
-    @Resource
-    StringRedisTemplate stringTemplate;
-
-    private UserService userService;
+    @Autowired
+    public void setStudentService(StudentService studentService) {
+        this.studentService = studentService;
+    }
 
     @Autowired
     public void setUserService(UserService userService) {
@@ -105,12 +121,32 @@ public class UtilsController {
     }
 
     @GetMapping("/fault-class")
-    public ResponseTemplate<List<String>> getFaultClassList(){
+    public ResponseTemplate<List<String>> getFaultClassList() {
         List<String> faultClassList = faultService.getFaultClassList();
         return ResponseTemplate.<List<String>>builder()
                 .code(200)
                 .message("错误类型列表")
                 .data(faultClassList)
+                .build();
+    }
+
+    @GetMapping("/get-info")
+    public ResponseTemplate<JSONObject> getInfo() {
+        int studentCount = studentService.getCount();
+        int workerCount = workerService.getCount();
+        int endOrderCount = ordersService.getEndOrderCount();
+        int waitOrderCount = ordersService.getWaitOrderCount();
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("studentCount", studentCount);
+        jsonObject.put("workerCount", workerCount);
+        jsonObject.put("endOrderCount", endOrderCount);
+        jsonObject.put("waitOrderCount", waitOrderCount);
+
+        return ResponseTemplate.<JSONObject>builder()
+                .code(200)
+                .message("信息")
+                .data(jsonObject)
                 .build();
     }
 

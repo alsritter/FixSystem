@@ -7,9 +7,11 @@ import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Student;
+import com.alsritter.pojo.Worker;
 import com.alsritter.services.OrdersService;
 import com.alsritter.services.StudentService;
 import com.alsritter.services.UserService;
+import com.alsritter.services.WorkerService;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
@@ -18,11 +20,16 @@ import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author alsritter
@@ -36,6 +43,12 @@ public class StudentController {
     private StudentService studentService;
     private UserService userService;
     private OrdersService ordersService;
+    private WorkerService workerService;
+
+    @Autowired
+    public void setWorkerService(WorkerService workerService) {
+        this.workerService = workerService;
+    }
 
     @Autowired
     public void setOrdersService(OrdersService ordersService) {
@@ -125,10 +138,10 @@ public class StudentController {
         Student student = studentService.getStudent(userService.getId(request));
         JSONObject result = new JSONObject();
         result.put("status", "获取成功");
-        result.put("id",student.getId());
-        result.put("name",student.getName());
-        result.put("gender",student.getGender());
-        result.put("phone",student.getPhone());
+        result.put("id", student.getId());
+        result.put("name", student.getName());
+        result.put("gender", student.getGender());
+        result.put("phone", student.getPhone());
         return ResponseTemplate.<JSONObject>builder()
                 .code(200)
                 .message("获取成功")
@@ -141,7 +154,7 @@ public class StudentController {
     @AuthToken
     public ResponseTemplate<JSONObject> updateStudent(HttpServletRequest request, String gender, String phone, String name) {
 
-        int i = studentService.updateStudent(userService.getId(request),gender , name, phone);
+        int i = studentService.updateStudent(userService.getId(request), gender, name, phone);
         JSONObject result = new JSONObject();
 
         if (i == 0) {
@@ -166,12 +179,29 @@ public class StudentController {
             String address,
             String contacts,
             String studentPhone,
-            String faultDetails
+            String faultDetails,
+            String images
     ) {
 
         // 先检查 contacts 和 studentPhone 参数是否为空，如果为空则查找当前用户的账号密码给他
         Student student = studentService.getStudent(userService.getId(request));
         JSONObject result = new JSONObject();
+        StringBuilder urls = new StringBuilder();
+        // 大于 3字符才算有图片
+        if (images.length() > 3) {
+            log.debug(images);
+            String[] strArr = images.split(",");
+
+
+            // 这里处理成 http 地址
+            for (String s : strArr) {
+                s = s.replaceAll(" ", "");
+                urls.append("/extStatic/").append(s).append(" ");
+            }
+            log.info(urls.toString());
+        }else {
+            urls.append(" ");
+        }
 
         if (contacts == null) {
             contacts = student.getName();
@@ -189,7 +219,8 @@ public class StudentController {
                     address,
                     contacts,
                     studentPhone,
-                    faultDetails);
+                    faultDetails,
+                    urls.toString().trim()); // 去掉首尾的空格
         } catch (MyDBError error) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR, error);
         }
@@ -288,6 +319,77 @@ public class StudentController {
                 .build();
     }
 
+    @PostMapping("/upload")
+    public ResponseTemplate<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        //判断目标文件所在的目录是否存在，不存在则创建
+        File folder = new File("../images/");
+        if (!folder.exists() && !folder.isDirectory()) {
+            folder.mkdirs();
+            log.info("创建文件夹 ../images/");
+        }
+
+        if (!file.isEmpty()) {
+            String name = System.currentTimeMillis() +
+                    file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+            try (
+                    // 这里随机生成名称
+                    BufferedOutputStream out = new BufferedOutputStream(
+                    new FileOutputStream(new File("../images/", name)))) {
+
+                log.info(file.getName());
+                out.write(file.getBytes());
+                out.flush();
+            } catch (IOException e) {
+                throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR.getResultCode(), "上传失败", e);
+            }
+
+            log.info(name);
+
+            return ResponseTemplate.
+                    <String>builder()
+                    .code(CommonEnum.SUCCESS.getResultCode())
+                    .message("上传成功")
+                    .data(name)
+                    .build();
+
+        } else {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "上传失败，因为文件是空的.");
+        }
+    }
+
+    @GetMapping("/worker-info")
+    @AllParamNotNull
+    @AuthToken
+    public ResponseTemplate<JSONObject> getWorker(String id) {
+        Worker user = workerService.getWorker(id);
+        List<Map<String, Object>> faultClassCount = ordersService.getFaultClassCount(id);
+        List<Map<String, Object>> toMonthOrders = ordersService.getToMonthOrdersInWorker(id);
+        List<Orders> todayOrdersList = ordersService.getTodayOrdersList(id);
+        int ordersNumberToday = 0;
+        if (todayOrdersList != null) {
+            ordersNumberToday = todayOrdersList.size();
+        }
+
+
+        JSONObject result = new JSONObject();
+        result.put("workId", user.getId());
+        result.put("name", user.getName());
+        result.put("gender", user.getGender());
+        result.put("phone", user.getPhone());
+        result.put("joinDate", user.getJoinDate());
+        result.put("details", user.getDetails());
+        result.put("ordersNumber", user.getOrdersNumber());
+        result.put("avgGrade", user.getAvgGrade());
+        result.put("ordersNumberToday", ordersNumberToday);
+        result.put("type", faultClassCount);
+        result.put("thisMonth", toMonthOrders);
+
+        return ResponseTemplate.<JSONObject>builder()
+                .code(CommonEnum.CREATED.getResultCode())
+                .message("工人详情页")
+                .data(result)
+                .build();
+    }
 
 }
 

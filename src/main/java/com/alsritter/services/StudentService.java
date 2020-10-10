@@ -111,5 +111,9 @@ public class StudentService {
         id = "%" + id + "%";
         return studentMapper.searchStudent(id);
     }
+
+    public int getCount() {
+        return studentMapper.getCount();
+    }
 }
 

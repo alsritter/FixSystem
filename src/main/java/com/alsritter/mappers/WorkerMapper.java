@@ -36,9 +36,7 @@ public interface WorkerMapper {
     @Select("select * from WORKER_TB  WHERE state = 0")
     List<Worker> getLeisureWorkerList();
 
-    @Insert("insert into WORKER_TB (WORK_ID, NAME, GENDER, PASSWORD, PHONE, JOIN_DATE, DETAILS, AVG_GRADE, ORDERS_NUMBER) " +
-            "VALUES (#{workId},#{name},#{gender},#{password},#{phone}, NOW(),#{details}, 10, 0)")
-    int signUpStudent(String workId, String name, String password, String phone, String gender, String details);
+    int signUpStudent(Worker worker);
 
     @ResultMap("worker")
     @Select("select ORDERS_NUMBER from WORKER_TB")
@@ -58,4 +56,7 @@ public interface WorkerMapper {
     @Select("select * from WORKER_TB\n" +
             "where WORK_ID like #{id};")
     List<Worker> searchWorker(String id);
+
+    @Select("select COUNT(*) from WORKER_TB;")
+    int getCount();
 }

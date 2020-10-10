@@ -239,13 +239,14 @@ public class OrdersService {
             String address,
             String contacts,
             String phone,
-            String faultDetails
+            String faultDetails,
+            String urls
     ) {
         // 检查这个错误类型是否是在数据库中的
         faultService.isExist(faultClass);
         int i = 0;
         try {
-            i = orderMapper.createOrder(studentId, contacts, phone, faultClass, address, faultDetails);
+            i = orderMapper.createOrder(studentId, contacts, phone, faultClass, address, faultDetails,urls);
         } catch (RuntimeException e) {
             throw new MyDBError("创建数据错误", e);
         }
@@ -315,5 +316,11 @@ public class OrdersService {
         return orderMapper.searchOrder(word);
     }
 
+    public int getEndOrderCount() {
+        return orderMapper.getEndOrderCount();
+    }
 
+    public int getWaitOrderCount() {
+        return orderMapper.getWaitOrderCount();
+    }
 }

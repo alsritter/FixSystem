@@ -5,14 +5,10 @@ import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
 import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
-import com.alsritter.pojo.Admin;
 import com.alsritter.pojo.Message;
 import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Worker;
-import com.alsritter.services.MessageService;
-import com.alsritter.services.OrdersService;
-import com.alsritter.services.UserService;
-import com.alsritter.services.WorkerService;
+import com.alsritter.services.*;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
@@ -36,6 +32,12 @@ public class WorkerController {
     private OrdersService ordersService;
     private UserService userService;
     private MessageService messageService;
+    private AdminService adminService;
+
+    @Autowired
+    public void setAdminService(AdminService adminService) {
+        this.adminService = adminService;
+    }
 
     @Autowired
     public void setMessageService(MessageService messageService) {
@@ -171,13 +173,47 @@ public class WorkerController {
     // //工人消息中心
     @GetMapping("/message-list")
     @AuthToken
-    public ResponseTemplate<List<Message>> getMessageList(){
+    public ResponseTemplate<List<Message>> getMessageList() {
         List<Message> messageList = messageService.getMessageList();
+        // 为了防止数据过大，这里大于 50 个字的则自动省略
+
+        messageList.forEach(x ->{
+            if (x.getMessageStr().length() > 50) {
+                x.setMessageStr(x.getMessageStr().substring(0,50) + "...");
+            }
+        });
+
         return ResponseTemplate
                 .<List<Message>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message("消息列表")
                 .data(messageList)
+                .build();
+    }
+
+    @GetMapping("/message")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<Message> getMessage(long messageId) {
+        Message message = messageService.getMessage(messageId);
+        return ResponseTemplate
+                .<Message>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("消息")
+                .data(message)
+                .build();
+    }
+
+
+    @GetMapping("/get-admin-name")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<String> getAdminName(String workId) {
+        return ResponseTemplate
+                .<String>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("管理员姓名")
+                .data(adminService.getName(workId))
                 .build();
     }
 
