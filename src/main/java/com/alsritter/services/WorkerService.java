@@ -167,13 +167,11 @@ public class WorkerService {
         return j;
     }
 
-    public List<Worker> searchWorker(String id) {
-        if (id == null || id.isEmpty()) {
-            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "关键字不能为空！");
+    public List<Worker> searchWorker(String id, String name, String phone) {
+        if (id == null && name == null && phone == null) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "关键字不能全部为空！");
         }
-        // 拼接关键字，使之能模糊查询
-        id = "%" + id + "%";
-        return workerMapper.searchWorker(id);
+        return workerMapper.searchWorker(id, name, phone);
     }
 
     public int getCount() {

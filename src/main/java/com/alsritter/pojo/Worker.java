@@ -20,6 +20,7 @@ public class Worker implements User{
   private String idnumber;
   private String ground;
 
+  private String url;
   private String id;
   private String name;
   private String gender;

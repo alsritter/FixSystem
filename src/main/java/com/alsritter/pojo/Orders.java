@@ -10,6 +10,7 @@ import java.util.Date;
 @Data
 public class Orders {
 
+  private Integer eid; // 设备 id(这里要用 Integer)
   private long fixTableId;
   private String studentId;
   private String contacts;

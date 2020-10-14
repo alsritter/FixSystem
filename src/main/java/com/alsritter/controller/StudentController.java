@@ -5,13 +5,11 @@ import com.alsritter.annotation.AuthImageCode;
 import com.alsritter.annotation.AuthToken;
 import com.alsritter.annotation.ParamNotNull;
 import com.alsritter.model.ResponseTemplate;
+import com.alsritter.pojo.Equipment;
 import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Student;
 import com.alsritter.pojo.Worker;
-import com.alsritter.services.OrdersService;
-import com.alsritter.services.StudentService;
-import com.alsritter.services.UserService;
-import com.alsritter.services.WorkerService;
+import com.alsritter.services.*;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.ConstantKit;
@@ -44,6 +42,12 @@ public class StudentController {
     private UserService userService;
     private OrdersService ordersService;
     private WorkerService workerService;
+    private EquipmentService equipmentService;
+
+    @Autowired
+    public void setEquipmentService(EquipmentService equipmentService) {
+        this.equipmentService = equipmentService;
+    }
 
     @Autowired
     public void setWorkerService(WorkerService workerService) {
@@ -180,7 +184,8 @@ public class StudentController {
             String contacts,
             String studentPhone,
             String faultDetails,
-            String images
+            String images,
+            Integer eid
     ) {
 
         // 先检查 contacts 和 studentPhone 参数是否为空，如果为空则查找当前用户的账号密码给他
@@ -199,7 +204,7 @@ public class StudentController {
                 urls.append("/extStatic/").append(s).append(" ");
             }
             log.info(urls.toString());
-        }else {
+        } else {
             urls.append(" ");
         }
 
@@ -220,7 +225,8 @@ public class StudentController {
                     contacts,
                     studentPhone,
                     faultDetails,
-                    urls.toString().trim()); // 去掉首尾的空格
+                    urls.toString().trim(), // 去掉首尾的空格
+                    eid);
         } catch (MyDBError error) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR, error);
         }
@@ -235,6 +241,28 @@ public class StudentController {
                     .data(result)
                     .build();
         }
+    }
+
+
+    @PostMapping("/order-qt")
+    @ParamNotNull(params = {"id"})
+    @AuthToken
+    public ResponseTemplate<String> createEquipmentOrder(
+            HttpServletRequest request,
+            Integer id,
+            String contacts,
+            String studentPhone,
+            String faultDetails,
+            String images) {
+        Equipment equipment = equipmentService.getEquipment(id);
+        createOrder(request, faultDetails, equipment.getAddress(), contacts, studentPhone, faultDetails, images, id);
+
+        return ResponseTemplate
+                .<String>builder()
+                .code(CommonEnum.CREATED.getResultCode())
+                .message("报修设备成功")
+                .data("报修设备成功")
+                .build();
     }
 
 
@@ -334,7 +362,7 @@ public class StudentController {
             try (
                     // 这里随机生成名称
                     BufferedOutputStream out = new BufferedOutputStream(
-                    new FileOutputStream(new File("../images/", name)))) {
+                            new FileOutputStream(new File("../images/", name)))) {
 
                 log.info(file.getName());
                 out.write(file.getBytes());
@@ -390,6 +418,7 @@ public class StudentController {
                 .data(result)
                 .build();
     }
+
 
 }
 

@@ -241,6 +241,13 @@ public class WorkerController {
         result.put("details", user.getDetails());
         result.put("ordersNumber", user.getOrdersNumber());
         result.put("avgGrade", user.getAvgGrade());
+        result.put("address", user.getAddress());
+        result.put("department", user.getDepartment());
+        result.put("email", user.getEmail());
+        result.put("place", user.getPlace());
+        result.put("idnumber", user.getIdnumber());
+        result.put("url", user.getUrl());
+        result.put("ground", user.getGround());
         result.put("ordersNumberToday", ordersNumberToday);
         result.put("type", faultClassCount);
         result.put("thisMonth", toMonthOrders);

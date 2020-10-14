@@ -15,11 +15,11 @@ import java.util.Date;
 public class Admin implements User{
 
   private String address;
-  private String department;
+  private String department; // 部门
   private String email;
   private String place;
   private String idnumber;
-  private String ground;
+  private String ground;  // 职位
 
   private String id;
   private String name;

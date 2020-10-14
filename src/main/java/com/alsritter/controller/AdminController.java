@@ -14,10 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +41,12 @@ public class AdminController {
     private UserService userService;
     private ToolService toolService;
     private MessageService messageService;
+    private EquipmentService equipmentService;
+
+    @Autowired
+    public void setEquipmentService(EquipmentService equipmentService) {
+        this.equipmentService = equipmentService;
+    }
 
     @Autowired
     public void setMessageService(MessageService messageService) {
@@ -105,20 +115,14 @@ public class AdminController {
     // 取得自己
     @GetMapping("/user")
     @AuthToken
-    public ResponseTemplate<JSONObject> getSelf(HttpServletRequest request) {
+    public ResponseTemplate<Admin> getSelf(HttpServletRequest request) {
         Admin admin = adminService.getSelf(userService.getId(request));
-        JSONObject result = new JSONObject();
-        result.put("status", "获取成功");
-        result.put("id", admin.getId());
-        result.put("name", admin.getName());
-        result.put("gender", admin.getGender());
-        result.put("phone", admin.getPhone());
-        result.put("joinDate", admin.getJoinDate());
-        result.put("details", admin.getDetails());
-        return ResponseTemplate.<JSONObject>builder()
+        // 密码不能暴露
+        admin.setPassword(null);
+        return ResponseTemplate.<Admin>builder()
                 .code(200)
                 .message("获取成功")
-                .data(result)
+                .data(admin)
                 .build();
     }
 
@@ -246,8 +250,8 @@ public class AdminController {
     @PatchMapping("/tool")
     @AuthToken
     @AllParamNotNull
-    public ResponseTemplate<JSONObject> updateTool(int toolId, int toolCount) {
-        int i = toolService.updateTool(toolId, toolCount);
+    public ResponseTemplate<JSONObject> updateTool(int toolId, String toolName, int toolCount, float price) {
+        int i = toolService.updateTool(toolId, toolName, toolCount, price);
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }
@@ -265,8 +269,8 @@ public class AdminController {
     @PostMapping("/tool")
     @AuthToken
     @AllParamNotNull
-    public ResponseTemplate<JSONObject> createTool(String toolName, int toolCount) {
-        int i = toolService.createTool(toolName, toolCount);
+    public ResponseTemplate<JSONObject> createTool(String toolName, int toolCount, float price) {
+        int i = toolService.createTool(toolName, toolCount, price);
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR);
         }
@@ -283,67 +287,48 @@ public class AdminController {
     @DeleteMapping("/tool")
     @AllParamNotNull
     @AuthToken
-    public void deleteTool(int toolId) {
+    public ResponseTemplate<String> deleteTool(int toolId) {
         int i = toolService.deleteTool(toolId);
         if (i == 0) {
             throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR.getResultCode(), "删除工具失败（可能是 Tool 不存在）");
         }
+
+        return ResponseTemplate
+                .<String>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("删除成功")
+                .data("删除成功")
+                .build();
     }
 
     @GetMapping("/student-list")
     @AuthToken
-    public ResponseTemplate<List<JSONObject>> getStudentList() {
+    public ResponseTemplate<List<Student>> getStudentList() {
         List<Student> studentList = studentService.getStudentList();
-        List<JSONObject> jsonObjectList = new ArrayList<>();
-        for (Student student : studentList) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("studentId", student.getId());
-            jsonObject.put("name", student.getName());
-            jsonObject.put("gender", student.getGender());
-            jsonObject.put("phone", student.getPhone());
-            jsonObjectList.add(jsonObject);
-        }
-
-
         return ResponseTemplate
-                .<List<JSONObject>>builder()
+                .<List<Student>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message("获取学生列表")
-                .data(jsonObjectList)
+                .data(studentList)
                 .build();
     }
 
     @GetMapping("/worker-list")
     @AuthToken
-    public ResponseTemplate<List<JSONObject>> getWorkerList() {
+    public ResponseTemplate<List<Worker>> getWorkerList() {
         List<Worker> workersList = workerService.getWorkerList();
-        List<JSONObject> jsonObjectList = new ArrayList<>();
-        for (Worker worker : workersList) {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("workId", worker.getId());
-            jsonObject.put("name", worker.getName());
-            jsonObject.put("gender", worker.getGender());
-            jsonObject.put("phone", worker.getPhone());
-            jsonObject.put("joinDate", worker.getJoinDate());
-            jsonObject.put("orderNumber", worker.getOrdersNumber());
-            jsonObject.put("details", worker.getDetails());
-            jsonObject.put("avgGrade", worker.getAvgGrade());
-            jsonObject.put("state", worker.getState());
-            jsonObjectList.add(jsonObject);
-        }
-
 
         return ResponseTemplate
-                .<List<JSONObject>>builder()
+                .<List<Worker>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message("获取职工列表")
-                .data(jsonObjectList)
+                .data(workersList)
                 .build();
     }
 
     @PostMapping("/sign-up-w")
     @AuthToken
-    @ParamNotNull(params = {"workId","name","password","phone","gender"})
+    @ParamNotNull(params = {"workId", "name", "password", "phone", "gender"})
     public ResponseTemplate<JSONObject> signUpWorker(
             String workId,
             String name,
@@ -351,6 +336,7 @@ public class AdminController {
             String phone,
             String gender,
             String details,
+            String url,
             String address,
             String department,
             String email,
@@ -358,6 +344,13 @@ public class AdminController {
             String ground,
             String idnumber
     ) {
+
+        if (url != null || url.length() > 3) {
+            url = url.replaceAll(" ", "");
+            url = "/extStatic/" + url;
+            log.info(url);
+        }
+
         int i = 0;
         try {
             // 在 Controller 里处理错误，而非在 Service
@@ -368,6 +361,7 @@ public class AdminController {
                     place,
                     idnumber,
                     ground,
+                    url,
                     workId,
                     name,
                     gender,
@@ -421,6 +415,13 @@ public class AdminController {
         result.put("ordersNumberToday", ordersNumberToday);
         result.put("type", faultClassCount);
         result.put("thisMonth", toMonthOrders);
+        result.put("address", user.getAddress());
+        result.put("department", user.getDepartment());
+        result.put("email", user.getEmail());
+        result.put("place", user.getPlace());
+        result.put("idnumber", user.getIdnumber());
+        result.put("url", user.getUrl());
+        result.put("ground", user.getGround());
 
         return ResponseTemplate.<JSONObject>builder()
                 .code(CommonEnum.CREATED.getResultCode())
@@ -490,6 +491,19 @@ public class AdminController {
                 .build();
     }
 
+    @GetMapping("/get-admin-name")
+    @AuthToken
+    @AllParamNotNull
+    public ResponseTemplate<String> getAdminName(String workId) {
+        return ResponseTemplate
+                .<String>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("管理员姓名")
+                .data(adminService.getName(workId))
+                .build();
+    }
+
+
     @PostMapping("/message")
     @AuthToken
     @AllParamNotNull
@@ -510,9 +524,9 @@ public class AdminController {
 
     @GetMapping("/search-order")
     @AuthToken
-    @AllParamNotNull
-    public ResponseTemplate<List<Orders>> searchOrder(String word) {
-        List<Orders> orders = ordersService.searchOrder(word);
+    public ResponseTemplate<List<Orders>> searchOrder(String workerId, String studentId, String name, String phone, String faultClass) {
+        log.info("{}-{}-{}-{}-{}", workerId, studentId, name, phone, faultClass);
+        List<Orders> orders = ordersService.searchOrder(workerId, studentId, name, phone, faultClass);
         return ResponseTemplate
                 .<List<Orders>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
@@ -523,22 +537,20 @@ public class AdminController {
 
     @GetMapping("/search-worker")
     @AuthToken
-    @AllParamNotNull
-    public ResponseTemplate<List<Worker>> searchWorker(String id) {
-        List<Worker> orders = workerService.searchWorker(id);
+    public ResponseTemplate<List<Worker>> searchWorker(String id, String name, String phone) {
+        List<Worker> workers = workerService.searchWorker(id, name, phone);
         return ResponseTemplate
                 .<List<Worker>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message("搜索成功")
-                .data(orders)
+                .data(workers)
                 .build();
     }
 
     @GetMapping("/search-student")
     @AuthToken
-    @AllParamNotNull
-    public ResponseTemplate<List<Student>> searchStudent(String id) {
-        List<Student> orders = studentService.searchStudent(id);
+    public ResponseTemplate<List<Student>> searchStudent(String id, String name, String phone) {
+        List<Student> orders = studentService.searchStudent(id, name, phone);
         return ResponseTemplate
                 .<List<Student>>builder()
                 .code(CommonEnum.SUCCESS.getResultCode())
@@ -546,4 +558,144 @@ public class AdminController {
                 .data(orders)
                 .build();
     }
+
+    @PostMapping("/upload")
+    public ResponseTemplate<String> uploadImage(@RequestParam("file") MultipartFile file) {
+        //判断目标文件所在的目录是否存在，不存在则创建
+        File folder = new File("../images/");
+        if (!folder.exists() && !folder.isDirectory()) {
+            folder.mkdirs();
+            log.info("创建文件夹 ../images/");
+        }
+
+        if (!file.isEmpty()) {
+            String name = System.currentTimeMillis() +
+                    file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+            try (
+                    // 这里随机生成名称
+                    BufferedOutputStream out = new BufferedOutputStream(
+                            new FileOutputStream(new File("../images/", name)))) {
+
+                log.info(file.getName());
+                out.write(file.getBytes());
+                out.flush();
+            } catch (IOException e) {
+                throw new BizException(CommonEnum.INTERNAL_SERVER_ERROR.getResultCode(), "上传失败", e);
+            }
+
+            log.info(name);
+
+            return ResponseTemplate.
+                    <String>builder()
+                    .code(CommonEnum.SUCCESS.getResultCode())
+                    .message("上传成功")
+                    .data(name)
+                    .build();
+
+        } else {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "上传失败，因为文件是空的.");
+        }
+    }
+
+
+    /**
+     * 注：接收参数的 Int 类型要使用 Integer，避免不必要的错误
+     * <b>
+     * 注册设备的 API
+     * </b>
+     * <br>
+     *
+     * @param ename        :
+     * @param eclass       :
+     * @param egrade       : 设备的等级（无影响）1-5 递增
+     * @param eweightGrade : 设备报修时间间隔
+     * @param eworkerId    : 对接的工人ID
+     * @param usingUnit    : 使用单位
+     * @param etype        : 设备的型号
+     * @param url          :
+     * @param address      : 不能为空，因为需要扫码填表
+     * @return : com.alsritter.model.ResponseTemplate<java.lang.Integer>
+     */
+    @PostMapping("/equipment")
+    @AuthToken
+    @ParamNotNull(params = {"ename", "eclass", "egrade", "eweightGrade", "eworkerId"})
+    public ResponseTemplate<Integer> addEquipment(
+            String ename,
+            String eclass,
+            Integer egrade,
+            Integer eweightGrade,
+            String eworkerId,
+            String usingUnit,
+            String etype,
+            String url,
+            String address) {
+        int id = equipmentService.addEquipment(ename, eclass, egrade, eweightGrade, eworkerId, usingUnit, etype, url, address);
+        return ResponseTemplate
+                .<Integer>builder()
+                .code(CommonEnum.CREATED.getResultCode())
+                .message("注册成功")
+                .data(id)
+                .build();
+    }
+
+    @PatchMapping("/equipment")
+    @AuthToken
+    @ParamNotNull(params = {"id","ename"})
+    public ResponseTemplate<String> updateEquipment(
+            Integer id,
+            String ename,
+            String eclass,
+            Integer egrade,
+            Integer eweightGrade,
+            String eworkerId,
+            String usingUnit,
+            String etype,
+            String address
+    ){
+        equipmentService.updateEquipment(id,ename, eclass, egrade, eweightGrade, eworkerId, usingUnit, etype, address);
+        return ResponseTemplate
+                .<String>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("修改成功")
+                .data("修改成功")
+                .build();
+    }
+
+    @GetMapping("/equipment")
+    @AuthToken
+    @ParamNotNull(params = {"id"})
+    public ResponseTemplate<Equipment> getEquipment(Integer id) {
+        Equipment equipment = equipmentService.getEquipment(id);
+        return ResponseTemplate
+                .<Equipment>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("设备列表")
+                .data(equipment)
+                .build();
+    }
+
+    @GetMapping("/equipment-list")
+    @AuthToken
+    public ResponseTemplate<List<Equipment>> getEquipmentList() {
+        List<Equipment> equipmentList = equipmentService.getEquipmentList();
+        return ResponseTemplate
+                .<List<Equipment>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("设备列表")
+                .data(equipmentList)
+                .build();
+    }
+
+    @GetMapping("/equipment-class")
+    @AuthToken
+    public ResponseTemplate<List<String>> getEquipmentClass() {
+        List<String> equipmentClassList = equipmentService.getEquipmentClass();
+        return ResponseTemplate
+                .<List<String>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("设备类型")
+                .data(equipmentClassList)
+                .build();
+    }
+
 }

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alsritter.mappers.EquipmentMapper">
+    <!-- useGeneratedKeys： 是否自动生成主键，默认false
+         keyProperty :返回的主键值赋给哪个属性
+         keyColumn ：数据库中的自增主键的列名 默认是数据库表的第一列。当主键列不是表中的第一列的时候需要设置必须设置-->
+    <!-- SELECT LAST_INSERT_ID() 也能插入刚插入数据的 id -->
+    <insert id="addEquipment" useGeneratedKeys="true" keyProperty="equipment.id" keyColumn="id">
+        insert into my_fix_system.equipment_tb
+        (ename, eclass, egrade, eweight_grade, eworker,
+        <trim suffix=")" suffixOverrides=",">
+            <if test="usingUnit != null and usingUnit.length() gt 0">
+                using_unit,
+            </if>
+            <if test="etype != null and etype.length() gt 0">
+                etype,
+            </if>
+            <if test="url != null and url.length() gt 0">
+                url,
+            </if>
+            <if test="address != null and address.length() gt 0">
+                address
+            </if>
+        </trim>
+        values (
+        #{ename},
+        #{eclass},
+        #{egrade},
+        #{eweightGrade},
+        #{eworkerId},
+        <trim suffix=")" suffixOverrides=",">
+            <if test="usingUnit != null and usingUnit.length() gt 0">
+                #{usingUnit},
+            </if>
+            <if test="etype != null and etype.length() gt 0">
+                #{etype},
+            </if>
+            <if test="url != null and url.length() gt 0">
+                #{url},
+            </if>
+            <if test="address != null and address.length() gt 0">
+                #{address}
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateEquipment">
+        update my_fix_system.equipment_tb set
+        <trim suffixOverrides=",">
+            ename=#{ename} ,
+            <if test="eclass != null and eclass.length() gt 0">
+                eclass=#{eclass},
+            </if>
+            <if test="egrade != null">
+                egrade=#{egrade} ,
+            </if>
+            <if test="eweightGrade != null">
+                eweight_grade=#{eweightGrade},
+            </if>
+            <if test="eworkerId != null and eworkerId.length() gt 0">
+                eworker=#{eworkerId},
+            </if>
+            <if test="usingUnit != null and usingUnit.length() gt 0">
+                using_unit=#{usingUnit},
+            </if>
+            <if test="etype != null and etype.length() gt 0">
+                etype=#{etype},
+            </if>
+            <if test="address != null and address.length() gt 0">
+                address=#{address}
+            </if>
+        </trim>
+        WHERE id=#{id}
+    </update>
+
+</mapper>

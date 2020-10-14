@@ -19,11 +19,19 @@ public class ToolService {
         return toolMapper.getToolList();
     }
 
+    public int getToolNumber() {
+        return toolMapper.getToolNumber();
+    }
+
+    public float getToolSumPrice() {
+        return toolMapper.getToolSumPrice();
+    }
+
     @Transactional
-    public int updateTool(int toolId, int toolCount) {
+    public int updateTool(int toolId, String toolName, int toolCount, float price) {
         int i = 0;
         try {
-            i = toolMapper.updateTool(toolId, toolCount);
+            i = toolMapper.updateTool(toolId,toolName, toolCount,price);
         } catch (RuntimeException e) {
             throw new MyDBError("更新工具数据出错", e);
         }
@@ -31,10 +39,10 @@ public class ToolService {
     }
 
     @Transactional
-    public int createTool(String toolName, int toolCount){
+    public int createTool(String toolName, int toolCount, float price){
         int i = 0;
         try {
-            i = toolMapper.createTool(toolName, toolCount);
+            i = toolMapper.createTool(toolName, toolCount, price);
         } catch (RuntimeException e) {
             throw new MyDBError("更新工具数据出错", e);
         }

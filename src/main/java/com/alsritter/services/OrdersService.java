@@ -27,7 +27,12 @@ public class OrdersService {
     public OrderMapper orderMapper;
     private WorkerService workerService;
     private FaultService faultService;
+    private EquipmentService equipmentService;
 
+    @Autowired
+    public void setEquipmentService(EquipmentService equipmentService) {
+        this.equipmentService = equipmentService;
+    }
 
     @Autowired
     public void setFaultService(FaultService faultService) {
@@ -179,6 +184,8 @@ public class OrdersService {
             throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "该订单没有指定工人！！！");
         }
 
+        //
+
         int i = 0;
         try {
             i = orderMapper.endOrder(fixTableId, resultDetails);
@@ -217,15 +224,13 @@ public class OrdersService {
 
         double newAvgGrade = ((avgGrade * ordersNumber) + grade) / (ordersNumber + 1);
 
-        try {
-            workerService.setGrade(worker.getId(),newAvgGrade);
-        } catch (RuntimeException e) {
-            throw new MyDBError("修改数据错误：", e);
-        }
-
         int i = 0;
         try {
             i = orderMapper.endOrderStudent(fixTableId, message, grade);
+            workerService.setGrade(worker.getId(), newAvgGrade);
+            if (orders.getEid() != null) {
+                equipmentService.setState(orders.getEid(), 0);
+            }
         } catch (RuntimeException e) {
             throw new MyDBError("修改数据错误：", e);
         }
@@ -240,13 +245,20 @@ public class OrdersService {
             String contacts,
             String phone,
             String faultDetails,
-            String urls
+            String urls,
+            Integer eid
     ) {
         // 检查这个错误类型是否是在数据库中的
         faultService.isExist(faultClass);
+
         int i = 0;
         try {
-            i = orderMapper.createOrder(studentId, contacts, phone, faultClass, address, faultDetails,urls);
+            i = orderMapper.createOrder(studentId, contacts, phone, faultClass, address, faultDetails, urls, eid);
+            // 再检查下是否为设备
+            if (eid != null) {
+                // 不为空就修改下状态
+                equipmentService.setState(eid, 1);
+            }
         } catch (RuntimeException e) {
             throw new MyDBError("创建数据错误", e);
         }
@@ -287,33 +299,31 @@ public class OrdersService {
         return orderMapper.getTodayOrdersList(workId);
     }
 
-    public List<Map<String,Object>> getFaultClassCount(String workId){
+    public List<Map<String, Object>> getFaultClassCount(String workId) {
         return orderMapper.getFaultClassCount(workId);
     }
 
-    public List<Map<String,Object>> getToMonthOrdersInWorker(String workId){
+    public List<Map<String, Object>> getToMonthOrdersInWorker(String workId) {
         return orderMapper.getToMonthOrdersInWorker(workId);
     }
 
-    public List<Map<String,Object>> getToMonthOrders(){
+    public List<Map<String, Object>> getToMonthOrders() {
         return orderMapper.getToMonthOrders();
     }
 
-    public List<Map<String, Object>> getOrderClassNumber(){
+    public List<Map<String, Object>> getOrderClassNumber() {
         return orderMapper.getOrderClassNumber();
     }
 
-    public int getOrderNumber(){
+    public int getOrderNumber() {
         return orderMapper.getOrderNumber();
     }
 
-    public List<Orders> searchOrder(String word){
-        if (word == null || word.isEmpty()) {
-            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(),"关键字不能为空！");
+    public List<Orders> searchOrder(String workerId, String studentId, String name, String phone, String faultClass) {
+        if (workerId == null && studentId == null && name == null && phone == null && faultClass == null) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "关键字不能全部为空！");
         }
-        // 拼接关键字，使之能模糊查询
-        word = "%" + word + "%";
-        return orderMapper.searchOrder(word);
+        return orderMapper.searchOrder(workerId, studentId, name, phone, faultClass);
     }
 
     public int getEndOrderCount() {
@@ -322,5 +332,9 @@ public class OrdersService {
 
     public int getWaitOrderCount() {
         return orderMapper.getWaitOrderCount();
+    }
+
+    public List<Map<String, Object>> getMonthAndYearCount() {
+        return orderMapper.getMonthAndYearCount();
     }
 }

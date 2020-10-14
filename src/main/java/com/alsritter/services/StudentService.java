@@ -96,20 +96,18 @@ public class StudentService {
     public int updateStudent(String studentId, String gender, String name, String phone) {
         int i = 0;
         try {
-            i = studentMapper.updateStudent(studentId, gender ,name, phone);
+            i = studentMapper.updateStudent(studentId, gender, name, phone);
         } catch (RuntimeException e) {
             throw new MyDBError("修改数据错误", e);
         }
         return i;
     }
 
-    public List<Student> searchStudent(String id) {
-        if (id == null || id.isEmpty()) {
-            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "关键字不能为空！");
+    public List<Student> searchStudent(String id, String name, String phone) {
+        if (id == null && name == null && phone == null) {
+            throw new BizException(CommonEnum.BAD_REQUEST.getResultCode(), "关键字不能全部为空！");
         }
-        // 拼接关键字，使之能模糊查询
-        id = "%" + id + "%";
-        return studentMapper.searchStudent(id);
+        return studentMapper.searchStudent(id, name, phone);
     }
 
     public int getCount() {

@@ -2,6 +2,7 @@ package com.alsritter.controller;
 
 import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.model.ResponseTemplate;
+import com.alsritter.pojo.Equipment;
 import com.alsritter.services.*;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
@@ -21,6 +22,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,6 +41,18 @@ public class UtilsController {
     private StudentService studentService;
     private OrdersService ordersService;
     private WorkerService workerService;
+    private ToolService toolService;
+    private EquipmentService equipmentService;
+
+    @Autowired
+    public void setEquipmentService(EquipmentService equipmentService) {
+        this.equipmentService = equipmentService;
+    }
+
+    @Autowired
+    public void setToolService(ToolService toolService) {
+        this.toolService = toolService;
+    }
 
     @Resource
     StringRedisTemplate stringTemplate;
@@ -150,5 +164,46 @@ public class UtilsController {
                 .build();
     }
 
+    @GetMapping("/get-tool-number")
+    public ResponseTemplate<Integer> getToolNumber() {
+        return ResponseTemplate.<Integer>builder()
+                .code(200)
+                .message("总数")
+                .data(toolService.getToolNumber())
+                .build();
+    }
+
+    @GetMapping("/get-tool-sum-price")
+    public ResponseTemplate<Float> getToolSumPrice() {
+        return ResponseTemplate.<Float>builder()
+                .code(200)
+                .message("总数")
+                .data(toolService.getToolSumPrice())
+                .build();
+    }
+
+    @GetMapping("/get-month-year-count")
+    public ResponseTemplate<List<Map<String, Object>>> getMonthAndYearCount() {
+        List<Map<String, Object>> monthAndYearCount = ordersService.getMonthAndYearCount();
+        return ResponseTemplate
+                .<List<Map<String, Object>>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(monthAndYearCount)
+                .build();
+    }
+
+    @GetMapping("/get-equipment")
+    @AllParamNotNull
+    public ResponseTemplate<Equipment> getEquipment(Integer id) {
+        Equipment equipment = equipmentService.getEquipment(id);
+        // 前面如果找不到会报 404 的错，通过这个来避免用户扫码的是其它二维码
+        return ResponseTemplate
+                .<Equipment>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("取得数据")
+                .data(equipment)
+                .build();
+    }
 
 }

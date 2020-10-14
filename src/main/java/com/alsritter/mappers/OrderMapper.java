@@ -46,10 +46,7 @@ public interface OrderMapper {
     @Select("select * from ORDERS_TB where fix_table_id=#{fixTableId} and student_id=#{studentId};")
     Orders isExistStudent(String studentId, long fixTableId);
 
-    @Insert("insert into ORDERS_TB (student_id, contacts, create_time, address, phone, fault_class, fault_detail, photo_url)\n" +
-            "values (#{studentId},#{contacts}, now(), #{address}, #{phone}, #{faultClass}, #{faultDetails}, #{urls})")
-    int createOrder(String studentId, String contacts, String phone, String faultClass, String address, String faultDetails, String urls);
-
+    int createOrder(String studentId, String contacts, String phone, String faultClass, String address, String faultDetails, String urls, Integer eid);
 
     @Update("update ORDERS_TB set " +
             "result_details= #{resultDetails}, state=2 , end_time = now() " +
@@ -99,18 +96,20 @@ public interface OrderMapper {
             "group by fault_class;")
     List<Map<String,Object>> getFaultClassCount(String workId);
 
-    @ResultMap("order")
-    @Select("select * from ORDERS_TB\n" +
-            "where fault_detail like #{word} or\n" +
-            "      fault_class like #{word} or\n" +
-            "      massage like #{word} or\n" +
-            "      result_details like #{word} or\n" +
-            "      contacts like #{word};")
-    List<Orders> searchOrder(String word);
+    List<Orders> searchOrder(String workerId, String studentId, String name, String phone, String faultClass);
 
     @Select("select COUNT(*) as number from ORDERS_TB where state = 2;")
     int getEndOrderCount();
 
     @Select("select COUNT(*) as number from ORDERS_TB where state = 0;")
     int getWaitOrderCount();
+
+
+    @Select("select year(create_time) as year,\n" +
+            "       month(create_time) as month,\n" +
+            "       count(*) as 'count'\n" +
+            "from ORDERS_TB\n" +
+            "where year(create_time)=2020\n" +
+            "group by year(create_time), month(create_time);")
+    List<Map<String, Object>> getMonthAndYearCount();
 }

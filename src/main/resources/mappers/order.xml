@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alsritter.mappers.OrderMapper">
+    <resultMap id="orderMap" type="Orders">
+        <!--column：数据库中的字段，property：实体类中的属性-->
+        <result column="fix_table_id" property="fixTableId"/>
+        <result column="student_id" property="studentId"/>
+        <result column="create_time" property="createdTime"/>
+        <result column="AVG_GRADE" property="avgGrade"/>
+        <result column="end_time" property="endTime"/>
+        <result column="fault_class" property="faultClass"/>
+        <result column="fault_detail" property="faultDetail"/>
+        <result column="work_id" property="workId"/>
+        <result column="admin_work_id" property="adminWorkId"/>
+        <result column="result_details" property="resultDetails"/>
+        <result column="massage" property="message"/>
+        <result column="photo_url" property="urls"/>
+    </resultMap>
+
+    <insert id="createOrder">
+        insert into my_fix_system.ORDERS_TB
+        <trim prefix="("  suffix=")" suffixOverrides=",">
+            student_id, contacts, create_time, address, phone, fault_class,
+            fault_detail, photo_url,
+            <if test="eid != null">
+                eid
+            </if>
+        </trim>
+        values
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{studentId}, #{contacts}, now(), #{address}, #{phone}, #{faultClass}, #{faultDetails}, #{urls},
+            <if test="eid != null">
+                #{eid}
+            </if>
+        </trim>
+    </insert>
+
+    <select id="searchOrder" resultType="Orders" resultMap="orderMap">
+        select * from my_fix_system.ORDERS_TB where
+        <trim suffixOverrides="and">
+            <if test="workerId != null and workerId.length() gt 0">
+                work_id like concat(concat('%',#{workerId}),'%') and
+            </if>
+            <if test="studentId != null and studentId.length() gt 0">
+                student_id like concat(concat('%',#{studentId}),'%') and
+            </if>
+            <if test="name != null and name.length() gt 0">
+                contacts like concat(concat('%',#{name}),'%') and
+            </if>
+            <if test="phone != null and phone.length() gt 0">
+                phone like concat(concat('%',#{phone}),'%') and
+            </if>
+            <if test="faultClass != null and faultClass.length() gt 0">
+                fault_class like concat(concat('%',#{faultClass}),'%')
+            </if>
+        </trim>
+    </select>
+
+</mapper>
