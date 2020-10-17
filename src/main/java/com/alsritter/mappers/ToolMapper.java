@@ -4,6 +4,7 @@ import com.alsritter.pojo.Tool;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ToolMapper {
 
@@ -39,4 +40,16 @@ public interface ToolMapper {
 
     @Select("select sum(price) from TOOL_TB;")
     float getToolSumPrice();
+
+    @Select("select tool_count as 'count', tool_name as 'name' from TOOL_TB;")
+    List<Map<String, Integer>> getToolNumberRatio();
+
+    @Select("select price , tool_name as 'name' from TOOL_TB;")
+    List<Map<String, Object>> getToolPriceRatio();
+
+    @Select("select price * tool_count as sum , tool_name as 'name' from TOOL_TB;")
+    List<Map<String, Object>> getToolSumPriceRatio();
+
+    @Select("select sum(tool_count * price) from TOOL_TB;")
+    Double getAllToolSumPrice();
 }

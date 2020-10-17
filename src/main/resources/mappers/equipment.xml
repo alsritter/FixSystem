@@ -4,6 +4,15 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.alsritter.mappers.EquipmentMapper">
+    <resultMap id="equipmentMap" type="Equipment">
+        <!--column：数据库中的字段，property：实体类中的属性-->
+        <result column="eweight_grade" property="eweightGrade"/>
+        <result column="using_unit" property="usingUnit"/>
+        <result column="update_date" property="updateDate"/>
+    </resultMap>
+
+
+
     <!-- useGeneratedKeys： 是否自动生成主键，默认false
          keyProperty :返回的主键值赋给哪个属性
          keyColumn ：数据库中的自增主键的列名 默认是数据库表的第一列。当主键列不是表中的第一列的时候需要设置必须设置-->
@@ -75,5 +84,30 @@
         </trim>
         WHERE id=#{id}
     </update>
+
+
+    <select id="searchEquipment" resultType="Equipment" resultMap="equipmentMap">
+        select * from my_fix_system.equipment_tb where
+        <trim suffixOverrides="and">
+            <if test="usingUnit != null and usingUnit.length() gt 0">
+                using_unit like concat(concat('%',#{usingUnit}),'%') and
+            </if>
+            <if test="ename != null and ename.length() gt 0">
+                ename like concat(concat('%',#{ename}),'%') and
+            </if>
+            <if test="etype != null and etype.length() gt 0">
+                etype like concat(concat('%',#{etype}),'%') and
+            </if>
+            <if test="eclass != null and eclass.length() gt 0">
+                eclass like concat(concat('%',#{eclass}),'%') and
+            </if>
+            <if test="egrade != null">
+                egrade like concat(concat('%',#{egrade}),'%') and
+            </if>
+            <if test="state != null">
+                state like concat(concat('%',#{state}),'%')
+            </if>
+        </trim>
+    </select>
 
 </mapper>

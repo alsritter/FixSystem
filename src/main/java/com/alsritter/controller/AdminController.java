@@ -629,6 +629,13 @@ public class AdminController {
             String etype,
             String url,
             String address) {
+
+        if (url != null || url.length() > 3) {
+            url = url.replaceAll(" ", "");
+            url = "/extStatic/" + url;
+            log.info(url);
+        }
+
         int id = equipmentService.addEquipment(ename, eclass, egrade, eweightGrade, eworkerId, usingUnit, etype, url, address);
         return ResponseTemplate
                 .<Integer>builder()
@@ -695,6 +702,25 @@ public class AdminController {
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message("设备类型")
                 .data(equipmentClassList)
+                .build();
+    }
+
+    @GetMapping("/search-equipment")
+    @AuthToken
+    public ResponseTemplate<List<Equipment>> searchEquipment(
+            String usingUnit,
+            String ename,
+            String etype, // 搜索型号
+            String eclass,
+            Integer egrade,
+            Integer state
+    ) {
+        List<Equipment> equipmentList = equipmentService.searchEquipment(usingUnit,ename,etype,eclass,egrade,state);
+        return ResponseTemplate
+                .<List<Equipment>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("搜索成功")
+                .data(equipmentList)
                 .build();
     }
 

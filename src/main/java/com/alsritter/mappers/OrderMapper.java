@@ -20,7 +20,8 @@ public interface OrderMapper {
             @Result(column = "admin_work_id", property = "adminWorkId"),
             @Result(column = "result_details", property = "resultDetails"),
             @Result(column = "massage", property = "message"),
-            @Result(column = "photo_url", property = "urls")
+            @Result(column = "photo_url", property = "urls"),
+            @Result(column = "eid", property = "eid")
     })
     @Select("select * from ORDERS_TB ;")
     List<Orders> getAllOrders();
@@ -46,7 +47,7 @@ public interface OrderMapper {
     @Select("select * from ORDERS_TB where fix_table_id=#{fixTableId} and student_id=#{studentId};")
     Orders isExistStudent(String studentId, long fixTableId);
 
-    int createOrder(String studentId, String contacts, String phone, String faultClass, String address, String faultDetails, String urls, Integer eid);
+    int createOrder(String studentId, String contacts, String phone, String faultClass, String address, String faultDetails, String urls, Integer eid, Orders orders);
 
     @Update("update ORDERS_TB set " +
             "result_details= #{resultDetails}, state=2 , end_time = now() " +

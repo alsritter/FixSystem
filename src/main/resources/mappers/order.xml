@@ -20,18 +20,23 @@
         <result column="photo_url" property="urls"/>
     </resultMap>
 
-    <insert id="createOrder">
+    <insert id="createOrder" useGeneratedKeys="true" keyProperty="orders.fixTableId" keyColumn="fix_table_id">
         insert into my_fix_system.ORDERS_TB
-        <trim prefix="("  suffix=")" suffixOverrides=",">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
             student_id, contacts, create_time, address, phone, fault_class,
-            fault_detail, photo_url,
+            fault_detail,
+            <if test="urls != null and urls.length() gt 0">
+                photo_url,
+            </if>
             <if test="eid != null">
                 eid
             </if>
         </trim>
-        values
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            #{studentId}, #{contacts}, now(), #{address}, #{phone}, #{faultClass}, #{faultDetails}, #{urls},
+            #{studentId}, #{contacts}, now(), #{address}, #{phone}, #{faultClass}, #{faultDetails},
+            <if test="urls != null and urls.length() gt 0">
+                #{urls},
+            </if>
             <if test="eid != null">
                 #{eid}
             </if>

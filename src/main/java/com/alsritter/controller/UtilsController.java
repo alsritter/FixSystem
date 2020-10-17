@@ -1,5 +1,6 @@
 package com.alsritter.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alsritter.annotation.AllParamNotNull;
 import com.alsritter.model.ResponseTemplate;
 import com.alsritter.pojo.Equipment;
@@ -12,15 +13,21 @@ import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +40,14 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/utils")
 public class UtilsController {
+
+    private RestTemplate restTemplate;
+
+    public UtilsController() {
+        this.restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory()); // 使用HttpClient，支持GZIP
+        restTemplate.getMessageConverters().set(1,new StringHttpMessageConverter(StandardCharsets.UTF_8)); // 支持中文编码
+    }
+
 
     private Producer captchaProducer;
 
@@ -164,23 +179,6 @@ public class UtilsController {
                 .build();
     }
 
-    @GetMapping("/get-tool-number")
-    public ResponseTemplate<Integer> getToolNumber() {
-        return ResponseTemplate.<Integer>builder()
-                .code(200)
-                .message("总数")
-                .data(toolService.getToolNumber())
-                .build();
-    }
-
-    @GetMapping("/get-tool-sum-price")
-    public ResponseTemplate<Float> getToolSumPrice() {
-        return ResponseTemplate.<Float>builder()
-                .code(200)
-                .message("总数")
-                .data(toolService.getToolSumPrice())
-                .build();
-    }
 
     @GetMapping("/get-month-year-count")
     public ResponseTemplate<List<Map<String, Object>>> getMonthAndYearCount() {
@@ -203,6 +201,140 @@ public class UtilsController {
                 .code(CommonEnum.SUCCESS.getResultCode())
                 .message("取得数据")
                 .data(equipment)
+                .build();
+    }
+
+
+    @GetMapping("/get-tool-number")
+    public ResponseTemplate<Integer> getToolNumber() {
+        return ResponseTemplate.<Integer>builder()
+                .code(200)
+                .message("总数")
+                .data(toolService.getToolNumber())
+                .build();
+    }
+
+
+    @GetMapping("/get-equipment-number")
+    public ResponseTemplate<Integer> getEquipmentNumber() {
+        return ResponseTemplate.<Integer>builder()
+                .code(200)
+                .message("总数")
+                .data(equipmentService.getEquipmentNumber())
+                .build();
+    }
+
+
+    @GetMapping("/get-tool-number-ratio")
+    public ResponseTemplate<List<Map<String, Integer>>> getToolNumberRatio() {
+        List<Map<String, Integer>> toolNumberRatio = toolService.getToolNumberRatio();
+        return ResponseTemplate
+                .<List<Map<String, Integer>>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(toolNumberRatio)
+                .build();
+    }
+
+    @GetMapping("/get-tool-price-ratio")
+    public ResponseTemplate<List<Map<String, Object>>> getToolPriceRatio() {
+        List<Map<String, Object>> toolPriceRatio = toolService.getToolPriceRatio();
+        return ResponseTemplate
+                .<List<Map<String, Object>>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(toolPriceRatio)
+                .build();
+    }
+
+    // 错误的api ，禁用
+    @GetMapping("/get-tool-sum-price")
+    public ResponseTemplate<Float> getToolSumPrice() {
+        return ResponseTemplate.<Float>builder()
+                .code(200)
+                .message("总数")
+                .data(toolService.getToolSumPrice())
+                .build();
+    }
+
+    @GetMapping("/get-all-tool-sum-price")
+    public ResponseTemplate<Double> getAllToolSumPrice() {
+        return ResponseTemplate
+                .<Double>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(toolService.getAllToolSumPrice())
+                .build();
+    }
+
+    @GetMapping("/get-tool-sumprice-ratio")
+    public ResponseTemplate<List<Map<String, Object>>> getToolSumPriceRatio() {
+        return ResponseTemplate
+                .<List<Map<String, Object>>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(toolService.getToolSumPriceRatio())
+                .build();
+    }
+
+    @GetMapping("/get-equipment-state-ratio")
+    public ResponseTemplate<List<Map<String, Object>>> getEquipmentStateRatio() {
+        return ResponseTemplate
+                .<List<Map<String, Object>>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(equipmentService.getEquipmentStateRatio())
+                .build();
+    }
+
+    @GetMapping("/get-equipment-grade-ratio")
+    public ResponseTemplate<List<Map<String, Object>>> getEquipmentGradeRatio() {
+        return ResponseTemplate
+                .<List<Map<String, Object>>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(equipmentService.getEquipmentGradeRatio())
+                .build();
+    }
+
+    @GetMapping("/get-equipment-class-ratio")
+    public ResponseTemplate<List<Map<String, Object>>> getEquipmentClassRatio() {
+        return ResponseTemplate
+                .<List<Map<String, Object>>>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(equipmentService.getEquipmentClassRatio())
+                .build();
+    }
+
+    @GetMapping("/get-weather")
+    public ResponseTemplate<JSONObject> getWeather() {
+        Double temp = null;
+        Double humidity = null;
+
+        String url = "https://devapi.heweather.net/v7/weather/now?location={location}&key={key}";
+        Map<String, Object> map = new HashMap<>();
+        map.put("location", "101010100");
+        map.put("key", "4298410860e442dda4620d0a3c0456bd");
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class, map);
+        if (response.getStatusCodeValue() == 200) {
+            String now = JSON.parseObject(response.getBody()).getString("now");
+            // 温度
+            temp = JSON.parseObject(now).getDouble("temp");
+            // 湿度
+            humidity = JSON.parseObject(now).getDouble("humidity");
+
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("temp", temp);
+        jsonObject.put("humidity", humidity);
+
+        return ResponseTemplate
+                .<JSONObject>builder()
+                .code(CommonEnum.SUCCESS.getResultCode())
+                .message("获取成功")
+                .data(jsonObject)
                 .build();
     }
 

@@ -255,7 +255,7 @@ public class StudentController {
             String faultDetails,
             String images) {
         Equipment equipment = equipmentService.getEquipment(id);
-        createOrder(request, faultDetails, equipment.getAddress(), contacts, studentPhone, faultDetails, images, id);
+        createOrder(request, "设备报修", equipment.getAddress(), contacts, studentPhone, faultDetails, images, id);
 
         return ResponseTemplate
                 .<String>builder()

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -59,5 +60,22 @@ public class ToolService {
             throw new MyDBError("删除工具失败", e);
         }
         return i;
+    }
+
+
+    public List<Map<String, Integer>> getToolNumberRatio() {
+        return toolMapper.getToolNumberRatio();
+    }
+
+    public List<Map<String, Object>> getToolPriceRatio() {
+        return toolMapper.getToolPriceRatio();
+    }
+
+    public List<Map<String, Object>> getToolSumPriceRatio() {
+        return toolMapper.getToolSumPriceRatio();
+    }
+
+    public Double getAllToolSumPrice() {
+        return toolMapper.getAllToolSumPrice();
     }
 }

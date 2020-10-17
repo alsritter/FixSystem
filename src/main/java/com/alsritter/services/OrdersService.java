@@ -1,11 +1,13 @@
 package com.alsritter.services;
 
 import com.alsritter.mappers.OrderMapper;
+import com.alsritter.pojo.Equipment;
 import com.alsritter.pojo.Orders;
 import com.alsritter.pojo.Worker;
 import com.alsritter.utils.BizException;
 import com.alsritter.utils.CommonEnum;
 import com.alsritter.utils.MyDBError;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ import java.util.Map;
  * @version 1.0
  **/
 @Service
+@Slf4j
 public class OrdersService {
 
     @Resource
@@ -184,11 +187,18 @@ public class OrdersService {
             throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "该订单没有指定工人！！！");
         }
 
-        //
+        log.info(order.toString());
 
         int i = 0;
         try {
             i = orderMapper.endOrder(fixTableId, resultDetails);
+            if (order.getEid() != null) {
+                // 更新下状态
+                equipmentService.setState(order.getEid(), 0);
+                // 重置下权重
+                equipmentService.updateDate(order.getEid());
+                log.debug("更新了设备：{} 的权重",order.getEid());
+            }
             workerService.setState(order.getWorkId(), 0);
             workerService.addOrderNumber(order.getWorkId());
         } catch (RuntimeException e) {
@@ -253,11 +263,16 @@ public class OrdersService {
 
         int i = 0;
         try {
-            i = orderMapper.createOrder(studentId, contacts, phone, faultClass, address, faultDetails, urls, eid);
+            // 这个 orders 单纯是用来装 id 的
+            Orders orders = new Orders();
+            i = orderMapper.createOrder(studentId, contacts, phone, faultClass, address, faultDetails, urls, eid, orders);
             // 再检查下是否为设备
             if (eid != null) {
                 // 不为空就修改下状态
                 equipmentService.setState(eid, 1);
+                // 再指定维修工人
+                Equipment equipment = equipmentService.getEquipment(eid);
+                workerService.selectLeisureWorker("admin", equipment.getEworker(), orders.getFixTableId());
             }
         } catch (RuntimeException e) {
             throw new MyDBError("创建数据错误", e);

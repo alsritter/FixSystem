@@ -90,9 +90,10 @@ public class WorkerService {
         if (worker == null) {
             throw new BizException(CommonEnum.NOT_FOUND.getResultCode(), "找不到该工人！");
         }
-        if (worker.getState() == 1) {
-            throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "当前工人已经在工作了，请不要再压榨他了");
-        }
+
+        // if (worker.getState() == 1) {
+        //     throw new BizException(CommonEnum.FORBIDDEN.getResultCode(), "当前工人已经在工作了，请不要再压榨他了");
+        // }
 
         // 再判断当前选定的订单是否已经在处理了或者是历史订单
         Orders order = ordersService.getOrder(fixTableId);
