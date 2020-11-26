@@ -12,7 +12,8 @@
     - 随着现代信息技术的快速发展，智慧化校园已是校园信息化的必然发展趋势。智能化提升校园的管理效率并降低人工成本是现代化设备建设的重要组成部分。为了方便学生、教师等学校居住人员的日常保修。使大家的生活更加智能化和便利化而设计的智能保修系统。
     - 所以 FixSystem 是一套专注于校园报修的工具系统，FixSystem 管理端采用 B/S 架构、客户端（学生端、维修工人）使用 app 来登陆报修以及处理日常业务。
 
-    - 点击查看项目演示视频： [![1602587229_1_.png](https://i.loli.net/2020/10/13/H7lv8sUwVnptBPi.png)](https://www.bilibili.com/video/BV1Qp4y1e7Zz)
+    - 点击查看项目演示视频： [![1602587229_1_.png](https://i.loli.net/2020/10/13/H7lv8sUwVnptBPi.png)](https://www.bilibili.com/video/BV1Hf4y1B7iQ)
+    - 点击查看项目演示视频（旧版）： [![1602587229_1_.png](https://i.loli.net/2020/10/13/H7lv8sUwVnptBPi.png)](https://www.bilibili.com/video/BV1Qp4y1e7Zz)
     - 点击查看项目地址：[![1602587707_1_.png](https://i.loli.net/2020/10/13/VXHN5ToyqYegCsJ.png)](https://gitee.com/KUJOUN/fix-system-web)
     - 管理端在线演示：[![image.png](https://i.loli.net/2020/10/15/Iz2g8Nr4C1JvxyL.png)](http://alsritter.gitee.io/fix-system-page/)
     - 手机端下载地址：[!![image.png](https://i.loli.net/2020/10/15/IfK2GrjVRCo7aOk.png)](https://gitee.com/alsritter/fix-system-app/attach_files/494715/download/fixSystemVersion2.apk)
